@@ -1,7 +1,6 @@
-#include <iostream>
-
+#include "System.h"
 int main(int argc, char** argv) {
-
-	std::cout << "Hello World!" << std::endl;
+	System* system = System::getInstance();
+	system->Run();
 	return 0;
 }
