@@ -35,7 +35,7 @@ private:
 	static Renderer rendererInstance;
 
 	void scanTriangle(const Vertex & v1, const Vertex & v2, const Vertex & v3, bool direction) const;
-	void scanEdges(const Edge& e1, const Edge& e2, bool direction)const;
+	void scanEdges( Edge& e1,Edge& e2, bool direction)const;
 	void drawScanLine(const Edge& left, const Edge& right, const uint32_t & j)const;
 
 };

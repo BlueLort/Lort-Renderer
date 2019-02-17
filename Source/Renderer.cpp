@@ -63,26 +63,25 @@ void Renderer::scanTriangle(const Vertex & v1, const Vertex & v2, const Vertex &
 	Edge topToMid= Edge(v1, v2);
 	Edge midToBot = Edge(v2, v3);
 
-	scanEdges(topToBot, midToBot, direction);
 	scanEdges(topToBot, topToMid, direction);
+	scanEdges(topToBot, midToBot, direction);
+	
 	
 }
 
-void Renderer::scanEdges(const Edge & e1, const Edge & e2, bool direction) const
+void Renderer::scanEdges(Edge & e1,Edge & e2, bool direction) const
 {
-	Edge left = e1;
-	Edge right = e2;
-	if (direction)
-	{
-		std::swap(left, right);
-	}
-	uint32_t yStart = e2.getYStart();
+	uint32_t yStart =  e2.getYStart();
 	uint32_t yEnd = e2.getYEnd();
 	for (uint32_t j = yStart; j < yEnd; j++)
 	{
-		drawScanLine(left, right, j);
-		left.Step();
-		right.Step();
+		if(!direction)
+		drawScanLine(e1, e2, j);
+		else {
+			drawScanLine(e2, e1, j);
+		}
+		e1.Step();
+		e2.Step();
 	}
 }
 void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t & j) const

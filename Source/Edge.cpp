@@ -27,6 +27,7 @@ Edge::Edge(const Edge & other)
 void Edge::Step()
 {
 	current += xStep;
+	
 }
 
 Edge::~Edge()

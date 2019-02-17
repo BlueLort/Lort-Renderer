@@ -128,7 +128,7 @@ void System::render()
 	counter += dTime;
 	
 	MAT4 model= MAT4::getTranslation(0.0f, 0.0f, 2.0f);
-	model = model* MAT4::getRotation(0.0f,0.0f,counter);
+	model = model* MAT4::getRotation(0.0f, counter,counter);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
 
