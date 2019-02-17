@@ -32,24 +32,26 @@ void Renderer::clearScreen() const
 
 void Renderer::drawTriangle(const Vertex&  v1, const Vertex&  v2, const Vertex&  v3) const
 {
-	MAT4 toScrSpace = MAT4::getScrSpaceTransform(halfScrWidth, halfScrHeight);
+	MAT4 toScrSpace = MAT4::getScrSpaceTransform(
+		static_cast<float>(halfScrWidth)
+		,static_cast<float>(halfScrHeight));
 
 	Vertex V1 = v1.Transform(toScrSpace).PrespDivide();
 	Vertex V2 = v2.Transform(toScrSpace).PrespDivide();
 	Vertex V3 = v3.Transform(toScrSpace).PrespDivide();
 
-	if (V3.position.SSE_VEC[1] < V2.position.SSE_VEC[1]) {
+	if (V3.position.arr[1] < V2.position.arr[1]) {
 		std::swap(V3, V2);
 	}
-	if (V2.position.SSE_VEC[1] < V1.position.SSE_VEC[1]) {
+	if (V2.position.arr[1] < V1.position.arr[1]) {
 		std::swap(V2, V1);
 	}
-	if (V3.position.SSE_VEC[1] < V2.position.SSE_VEC[1]) {
+	if (V3.position.arr[1] < V2.position.arr[1]) {
 		std::swap(V3, V2);
 	}
 	VEC4 p1_p2 = V2.position - V1.position;
 	VEC4 p1_p3 = V3.position - V1.position;
-	float crossAns = p1_p2.SSE_VEC[0] * p1_p3.SSE_VEC[1] - p1_p2.SSE_VEC[1] * p1_p3.SSE_VEC[0];
+	float crossAns = p1_p2.arr[0] * p1_p3.arr[1] - p1_p2.arr[1] * p1_p3.arr[0];
 	bool dir = 0;
 	if (crossAns < 0)dir = 1;
 
@@ -76,17 +78,17 @@ void Renderer::scanEdges(const Edge & e1, const Edge & e2, bool direction) const
 	}
 	uint32_t yStart = e2.getYStart();
 	uint32_t yEnd = e2.getYEnd();
-	for (uint32_t i = yStart; i < yEnd; i++)
+	for (uint32_t j = yStart; j < yEnd; j++)
 	{
-		drawScanLine(left, right, i);
+		drawScanLine(left, right, j);
 		left.Step();
 		right.Step();
 	}
 }
 void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t & j) const
 {
-	uint32_t xMin = (uint32_t)ceilf(left.getCurrent());
-	uint32_t xMax = (uint32_t)ceilf(right.getCurrent());
+	uint32_t xMin = (uint32_t)ceil(left.getCurrent());
+	uint32_t xMax = (uint32_t)ceil(right.getCurrent());
 
 	for (uint32_t i = xMin; i < xMax; i++)
 	{

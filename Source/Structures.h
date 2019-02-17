@@ -89,52 +89,52 @@ struct F32vec4 {
 	
 };*/
 struct VEC4 {
-	F32vec4 SSE_VEC;//using simd for better performance
+	F32vec4 arr;
 	VEC4() {
-		SSE_VEC[0] = 0;
-		SSE_VEC[1] = 0;
-		SSE_VEC[2] = 0;
-		SSE_VEC[3] = 0;
+		arr[0] = 0;
+		arr[1] = 0;
+		arr[2] = 0;
+		arr[3] = 0;
 	}
 	VEC4(const VEC4& otherVEC4) {
-		SSE_VEC = otherVEC4.SSE_VEC;
+		arr = otherVEC4.arr;
 	}
 	VEC4(const F32vec4& otherSSEVEC) {
-		SSE_VEC = otherSSEVEC;
+		arr = otherSSEVEC;
 	}
 	VEC4(const float& x, const float&y, const float& z, const float& w) {
-		SSE_VEC[0] = x;
-		SSE_VEC[1] = y;
-		SSE_VEC[2] = z;
-		SSE_VEC[3] = w;
+		arr[0] = x;
+		arr[1] = y;
+		arr[2] = z;
+		arr[3] = w;
 	}
 	VEC4(const float& num) {
-		SSE_VEC[0] = num;
-		SSE_VEC[1] = num;
-		SSE_VEC[2] = num;
-		SSE_VEC[3] = num;
+		arr[0] = num;
+		arr[1] = num;
+		arr[2] = num;
+		arr[3] = num;
 	}
 	VEC4 Lerp(const VEC4& dest, float Factor)
 	{
-		return VEC4(((dest.SSE_VEC - this->SSE_VEC) *((F32vec4)Factor))+(this->SSE_VEC));
+		return VEC4(((dest.arr - this->arr) *((F32vec4)Factor))+(this->arr));
 	}
 	VEC4 Rotate(VEC4 axis, float angle) {//EULER ROTATION
-		float sinAngle = (float)sinf(-angle);
-		float cosAngle = (float)cosf(-angle);
-		VEC4 c(SSE_VEC);
+		float sinAngle = (float)sin(-angle);
+		float cosAngle = (float)cos(-angle);
+		VEC4 c(arr);
 				//rotation on local x	- rotation on local y - rotation on local z
 		return c.Cross(axis*sinAngle)	 +		c * cosAngle	+ axis * (c.Dot(axis*(1 - cosAngle)));
 	}
 	VEC4 Normalize() const{
 		VEC4 vec;
 		float mag= this->Length();
-		vec.SSE_VEC = SSE_VEC /(F32vec4)mag;
+		vec.arr = arr /(F32vec4)mag;
 		return vec;
 	}
 	VEC4 Cross(const VEC4& V) const {
-		float x1 = SSE_VEC[0], x2 = V.SSE_VEC[0];
-		float y1 = SSE_VEC[1], y2 = V.SSE_VEC[1];
-		float z1 = SSE_VEC[2], z2 = V.SSE_VEC[2];
+		float x1 = arr[0], x2 = V.arr[0];
+		float y1 = arr[1], y2 = V.arr[1];
+		float z1 = arr[2], z2 = V.arr[2];
 		float x = y1 * z2 - y2 * z1;
 		float y = z1 * x2 - z2 * x1;
 		float z = x1 * y2 - x2 * y1;
@@ -143,93 +143,93 @@ struct VEC4 {
 
 	}
 	float Dot(const VEC4& V)const {
-		VEC4 ans = SSE_VEC * V.SSE_VEC;//EXPLICIT CASTING
-		return ans.SSE_VEC[0] + ans.SSE_VEC[1] + ans.SSE_VEC[2] + ans.SSE_VEC[3];
+		VEC4 ans = arr * V.arr;
+		return ans.arr[0] + ans.arr[1] + ans.arr[2] + ans.arr[3];
 	}
 	float getMax() const{
-		float max = SSE_VEC[0];
+		float max = arr[0];
 		for (int16_t i = 1; i < 4; i++) {
-			if (max < SSE_VEC[i])max = SSE_VEC[i];
+			if (max < arr[i])max = arr[i];
 		}
 		return max;
 	}
 	float getMin() const {
-		float min = SSE_VEC[0];
+		float min = arr[0];
 		for (int16_t i = 1; i < 4; i++) {
-			if (min > SSE_VEC[i])min= SSE_VEC[i];
+			if (min > arr[i])min= arr[i];
 		}
 		return min;
 	}
 	VEC4 operator +(const VEC4& otherVEC4) const {
-		VEC4 v(this->SSE_VEC + otherVEC4.SSE_VEC);
+		VEC4 v(this->arr + otherVEC4.arr);
 		return v;
 	}
 	VEC4 operator +(const float& f) const {
-		VEC4 v(this->SSE_VEC + (F32vec4)f);
+		VEC4 v(this->arr + (F32vec4)f);
 		return v;
 	}
 	VEC4 operator -(const VEC4& otherVEC4) const {
-		VEC4 v(this->SSE_VEC - otherVEC4.SSE_VEC);
+		VEC4 v(this->arr - otherVEC4.arr);
 		return v;
 	}
 	VEC4 operator -(const float& f) const {
-		VEC4 v(this->SSE_VEC - (F32vec4)f);
+		VEC4 v(this->arr - (F32vec4)f);
 		return v;
 	}
 	VEC4 operator *(const VEC4& otherVEC4) const {
-		VEC4 v(this->SSE_VEC * otherVEC4.SSE_VEC);
+		VEC4 v(this->arr * otherVEC4.arr);
 		return v;
 	}
 	VEC4 operator *(const float& f) const {
-		VEC4 v(this->SSE_VEC * (F32vec4)f);
+		VEC4 v(this->arr * (F32vec4)f);
 		return v;
 	}
 	VEC4 operator /(const VEC4& otherVEC4) const {
-		VEC4 v(this->SSE_VEC / otherVEC4.SSE_VEC);
+		VEC4 v(this->arr / otherVEC4.arr);
 		return v;
 	}
 	VEC4 operator /(const float& f) const {
-		VEC4 v(this->SSE_VEC / (F32vec4)f);
+		VEC4 v(this->arr / (F32vec4)f);
 		return v;
 	}
 	float Length() const{
-		F32vec4 SSE_VEC_SQUARED = SSE_VEC * SSE_VEC;
+		F32vec4 SSE_VEC_SQUARED = arr * arr;
 		return sqrtf(SSE_VEC_SQUARED[0] + SSE_VEC_SQUARED[1] + SSE_VEC_SQUARED[2] + SSE_VEC_SQUARED[3]);
 	}
 };
 struct VEC3 {
-	F32vec4 SSE_VEC;//using simd for better performance(not using last 32bits)
+	F32vec4 arr;
 	VEC3() {
-		SSE_VEC[0] = 0;
-		SSE_VEC[1] = 0;
-		SSE_VEC[2] = 0;
+		arr[0] = 0;
+		arr[1] = 0;
+		arr[2] = 0;
 	}
 	VEC3(const VEC3& otherVEC3) {
-		SSE_VEC = otherVEC3.SSE_VEC;
+		arr = otherVEC3.arr;
 	}
 	VEC3(const F32vec4& otherSSEVEC) {
-		SSE_VEC = otherSSEVEC;
+		arr = otherSSEVEC;
 	}
 	VEC3(const float& x, const float&y, const float& z) {
-		SSE_VEC[0] = x;
-		SSE_VEC[1] = y;
-		SSE_VEC[2] = z;
+		arr[0] = x;
+		arr[1] = y;
+		arr[2] = z;
 	}
 	VEC3(const float& num) {
-		SSE_VEC[0] = num;
-		SSE_VEC[1] = num;
-		SSE_VEC[2] = num;
+		arr[0] = num;
+		arr[1] = num;
+		arr[2] = num;
 	}
 	VEC3 Normalize() const{
 		VEC3 vec;
 		float mag = this->Length();
-		vec.SSE_VEC = SSE_VEC / (F32vec4)mag;
+		vec.arr = arr / (F32vec4)mag;
 		return vec;
 	}
 	VEC3 Cross(const VEC3& V) const {
-		float x1 = SSE_VEC[0], x2 = V.SSE_VEC[0];
-		float y1 = SSE_VEC[1], y2 = V.SSE_VEC[1];
-		float z1 = SSE_VEC[2], z2 = V.SSE_VEC[2];
+		float x1 = arr[0], x2 = V.arr[0];
+		float y1 = arr[1], y2 = V.arr[1];
+		float z1 = arr[2], z2 = V.arr[2];
 		float x = y1 * z2 - y2 * z1;
 		float y = z1 * x2 - z2 * x1;
 		float z = x1 * y2 - x2 * y1;
@@ -238,128 +238,128 @@ struct VEC3 {
 
 	}
 	float Dot(const VEC3& V)const {
-		VEC3 ans = SSE_VEC * V.SSE_VEC;//EXPLICIT CASTING
-		return ans.SSE_VEC[0] + ans.SSE_VEC[1] + ans.SSE_VEC[2];
+		VEC3 ans = arr * V.arr;//EXPLICIT CASTING
+		return ans.arr[0] + ans.arr[1] + ans.arr[2];
 	}
 	float getMax() const {
-		float max = SSE_VEC[0];
+		float max = arr[0];
 		for (int16_t i = 1; i < 3; i++) {
-			if (max < SSE_VEC[i])max = SSE_VEC[i];
+			if (max < arr[i])max = arr[i];
 		}
 		return max;
 	}
 	float getMin() const {
-		float min = SSE_VEC[0];
+		float min = arr[0];
 		for (int16_t i = 1; i < 3; i++) {
-			if (min > SSE_VEC[i])min = SSE_VEC[i];
+			if (min > arr[i])min = arr[i];
 		}
 		return min;
 	}
 	VEC3 operator +(const VEC3& otherVEC3) const {
-		VEC3 v(this->SSE_VEC + otherVEC3.SSE_VEC);
+		VEC3 v(this->arr + otherVEC3.arr);
 		return v;
 	}
 	VEC3 operator +(const float& f) const {
-		VEC3 v(this->SSE_VEC + (F32vec4)f);
+		VEC3 v(this->arr + (F32vec4)f);
 		return v;
 	}
 	VEC3 operator -(const VEC3& otherVEC3) const {
-		VEC3 v(this->SSE_VEC - otherVEC3.SSE_VEC);
+		VEC3 v(this->arr - otherVEC3.arr);
 		return v;
 	}
 	VEC3 operator -(const float& f) const {
-		VEC3 v(this->SSE_VEC - (F32vec4)f);
+		VEC3 v(this->arr - (F32vec4)f);
 		return v;
 	}
 	VEC3 operator *(const VEC3& otherVEC3) const {
-		VEC3 v(this->SSE_VEC * otherVEC3.SSE_VEC);
+		VEC3 v(this->arr * otherVEC3.arr);
 		return v;
 	}
 	VEC3 operator *(const float& f) const {
-		VEC3 v(this->SSE_VEC * (F32vec4)f);
+		VEC3 v(this->arr * (F32vec4)f);
 		return v;
 	}
 	VEC3 operator /(const VEC3& otherVEC3) const {
-		VEC3 v(this->SSE_VEC / otherVEC3.SSE_VEC);
+		VEC3 v(this->arr / otherVEC3.arr);
 		return v;
 	}
 	VEC3 operator /(const float& f) const {
-		VEC3 v(this->SSE_VEC / (F32vec4)f);
+		VEC3 v(this->arr / (F32vec4)f);
 		return v;
 	}
 	float Length() const {
-		F32vec4 SSE_VEC_SQUARED = SSE_VEC * SSE_VEC;
+		F32vec4 SSE_VEC_SQUARED = arr * arr;
 		return sqrtf(SSE_VEC_SQUARED[0] + SSE_VEC_SQUARED[1] + SSE_VEC_SQUARED[2]);
 	}
 };
 struct VEC2 {
-	F32vec4 SSE_VEC;//using simd for better performance(not using last 64bits)
+	F32vec4 arr;
 	VEC2() {
-		SSE_VEC[0] = 0;
-		SSE_VEC[1] = 0;
+		arr[0] = 0;
+		arr[1] = 0;
 	}
 	VEC2(const VEC2& otherVEC2) {
-		SSE_VEC = otherVEC2.SSE_VEC;
+		arr = otherVEC2.arr;
 	}
 	VEC2(const F32vec4& otherSSEVEC) {
-		SSE_VEC = otherSSEVEC;
+		arr = otherSSEVEC;
 	}
 	VEC2(const float& x, const float& y) {
-		SSE_VEC[0] = x;
-		SSE_VEC[1] = y;
+		arr[0] = x;
+		arr[1] = y;
 	}
 	VEC2(const float& num) {
-		SSE_VEC[0] = num;
-		SSE_VEC[1] = num;
+		arr[0] = num;
+		arr[1] = num;
 	}
 	float Dot(const VEC2& V)const {
-		VEC2 ans = SSE_VEC * V.SSE_VEC;//EXPLICIT CASTING
-		return ans.SSE_VEC[0] + ans.SSE_VEC[1];
+		VEC2 ans = arr * V.arr;//EXPLICIT CASTING
+		return ans.arr[0] + ans.arr[1];
 	}
 	float getMax() const {
-		float max = SSE_VEC[0];
-			if (max < SSE_VEC[1])max = SSE_VEC[1];
+		float max = arr[0];
+			if (max < arr[1])max = arr[1];
 		return max;
 	}
 	float getMin() const {
-		float min = SSE_VEC[0];
-			if (min > SSE_VEC[1])min = SSE_VEC[1];
+		float min = arr[0];
+			if (min > arr[1])min = arr[1];
 		return min;
 	}
 	VEC2 operator +(const VEC2& otherVEC2) const {
-		VEC2 v(this->SSE_VEC + otherVEC2.SSE_VEC);
+		VEC2 v(this->arr + otherVEC2.arr);
 		return v;
 	}
 	VEC2 operator +(const float& f) const {
-		VEC2 v(this->SSE_VEC + (F32vec4)f);
+		VEC2 v(this->arr + (F32vec4)f);
 		return v;
 	}
 	VEC2 operator -(const VEC2& otherVEC2) const {
-		VEC2 v(this->SSE_VEC - otherVEC2.SSE_VEC);
+		VEC2 v(this->arr - otherVEC2.arr);
 		return v;
 	}
 	VEC2 operator -(const float& f) const {
-		VEC2 v(this->SSE_VEC - (F32vec4)f);
+		VEC2 v(this->arr - (F32vec4)f);
 		return v;
 	}
 	VEC2 operator *(const VEC2& otherVEC2) const {
-		VEC2 v(this->SSE_VEC * otherVEC2.SSE_VEC);
+		VEC2 v(this->arr * otherVEC2.arr);
 		return v;
 	}
 	VEC2 operator *(const float& f) const {
-		VEC2 v(this->SSE_VEC * (F32vec4)f);
+		VEC2 v(this->arr * (F32vec4)f);
 		return v;
 	}
 	VEC2 operator /(const VEC2& otherVEC2) const {
-		VEC2 v(this->SSE_VEC / otherVEC2.SSE_VEC);
+		VEC2 v(this->arr / otherVEC2.arr);
 		return v;
 	}
 	VEC2 operator /(const float& f) const {
-		VEC2 v(this->SSE_VEC / (F32vec4)f);
+		VEC2 v(this->arr / (F32vec4)f);
 		return v;
 	}
 	float Length() const {
-		F32vec4 SSE_VEC_SQUARED = SSE_VEC * SSE_VEC;
+		F32vec4 SSE_VEC_SQUARED = arr * arr;
 		return sqrtf(SSE_VEC_SQUARED[0] + SSE_VEC_SQUARED[1]);
 	}
 };
@@ -417,7 +417,7 @@ struct MAT4 {
 	VEC4 rows[4];
 	MAT4() {//make identity matrix
 		for (int16_t i = 0; i < 4; i++) {
-			rows[i].SSE_VEC[i] = 1;
+			rows[i].arr[i] = 1;
 		}
 	}
 	MAT4(const MAT4& otherMAT4) {
@@ -427,35 +427,35 @@ struct MAT4 {
 	}
 	MAT4(const float& num) {
 		for (int16_t i = 0; i < 4; i++) {
-			rows[i].SSE_VEC[0] = num;
-			rows[i].SSE_VEC[1] = num;
-			rows[i].SSE_VEC[2] = num;
-			rows[i].SSE_VEC[3] = num;
+			rows[i].arr[0] = num;
+			rows[i].arr[1] = num;
+			rows[i].arr[2] = num;
+			rows[i].arr[3] = num;
 		}
 	}
 	static MAT4 getScrSpaceTransform(const float& halfWidth, const float& halfHeight){
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = halfWidth;
-		m.rows[1].SSE_VEC[1] = -halfHeight;
-		m.rows[0].SSE_VEC[3] = halfWidth;
-		m.rows[1].SSE_VEC[3] = halfHeight;
+		m.rows[0].arr[0] = halfWidth;
+		m.rows[1].arr[1] = -halfHeight;
+		m.rows[0].arr[3] = halfWidth;
+		m.rows[1].arr[3] = halfHeight;
 		return m;
 	}
 	static MAT4 getTranslation(const float& x, const float& y, const float&z){
 		MAT4 m;
-		m.rows[0].SSE_VEC[3] = x;
-		m.rows[1].SSE_VEC[3] = y;
-		m.rows[2].SSE_VEC[3] = z;
+		m.rows[0].arr[3] = x;
+		m.rows[1].arr[3] = y;
+		m.rows[2].arr[3] = z;
 		return m;
 	}
 	static MAT4 getRotation(const float& x, const float& y, const float& z, const float& angle){
-		float s = (float)sinf(angle);
-		float c = (float)cosf(angle);
+		float s = (float)sin(angle);
+		float c = (float)cos(angle);
 		float Ic = 1.0f - c;
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = c + x * x*Ic; m.rows[0].SSE_VEC[1] = x * y*Ic - z * s; m.rows[0].SSE_VEC[2] = x * z*Ic + y * s;
-		m.rows[1].SSE_VEC[0] = y * x*Ic + z * s; m.rows[1].SSE_VEC[1] = c + y * y*Ic; m.rows[1].SSE_VEC[2] = y * z*Ic - x * s;
-		m.rows[2].SSE_VEC[0] = z * x*Ic - y * s; m.rows[1].SSE_VEC[1] = z * y*Ic + x * s; m.rows[1].SSE_VEC[2] = c + z * z*Ic;
+		m.rows[0].arr[0] = c + x * x*Ic; m.rows[0].arr[1] = x * y*Ic - z * s; m.rows[0].arr[2] = x * z*Ic + y * s;
+		m.rows[1].arr[0] = y * x*Ic + z * s; m.rows[1].arr[1] = c + y * y*Ic; m.rows[1].arr[2] = y * z*Ic - x * s;
+		m.rows[2].arr[0] = z * x*Ic - y * s; m.rows[1].arr[1] = z * y*Ic + x * s; m.rows[1].arr[2] = c + z * z*Ic;
 		return m;
 
 	}
@@ -463,14 +463,14 @@ struct MAT4 {
 		MAT4 RX;
 		MAT4 RY;
 		MAT4 RZ;
-		RZ.rows[0].SSE_VEC[0] = (float)cosf(z); RZ.rows[0].SSE_VEC[1] = -sinf(z);
-		RZ.rows[1].SSE_VEC[0] = sinf(z); RZ.rows[1].SSE_VEC[1] = cosf(z);		
+		RZ.rows[0].arr[0] = cos(z); RZ.rows[0].arr[1] = -sin(z);
+		RZ.rows[1].arr[0] = sin(z); RZ.rows[1].arr[1] = cos(z);		
 
-		RX.rows[1].SSE_VEC[1] = cosf(x); RX.rows[1].SSE_VEC[2] = -sinf(x); 
-		RX.rows[2].SSE_VEC[1] = sinf(x); RX.rows[2].SSE_VEC[2] = cosf(x);
+		RY.rows[0].arr[0] = cos(y); RY.rows[0].arr[2] = sin(y);
+		RY.rows[2].arr[0] = -sin(y); RY.rows[2].arr[2] = cos(y);
 
-		RY.rows[0].SSE_VEC[0] = cosf(y); RY.rows[0].SSE_VEC[2] = -sinf(y);
-		RY.rows[2].SSE_VEC[0] = sinf(y); RY.rows[2].SSE_VEC[2] = cosf(y);
+		RX.rows[1].arr[1] = cos(x); RX.rows[1].arr[2] = -sin(x);
+		RX.rows[2].arr[1] = sin(x); RX.rows[2].arr[2] = cos(x);
 	
 		
 		return  RZ * RY * RX;
@@ -479,7 +479,7 @@ struct MAT4 {
 	static MAT4 getScale(const float& x, const float& y, const float& z)
 	{
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = x;m.rows[1].SSE_VEC[1] = y;	m.rows[2].SSE_VEC[2] = z;
+		m.rows[0].arr[0] = x;m.rows[1].arr[1] = y;	m.rows[2].arr[2] = z;
 		return m;
 	}
 
@@ -488,12 +488,12 @@ struct MAT4 {
 		float tanHalfFOV =tanf((FOV / 2.0f)*(3.14159265359f/180.0f));
 		float zRange = zNear - zFar;
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = 1.0f / (tanHalfFOV * aspectRatio);
-		m.rows[1].SSE_VEC[1] = 1.0f / tanHalfFOV;
-		m.rows[2].SSE_VEC[2] = (-zNear - zFar) / zRange;
-		m.rows[2].SSE_VEC[3] = 2 * zFar * zNear / zRange;
-		m.rows[3].SSE_VEC[2] = 1.0f;
-		m.rows[3].SSE_VEC[3] = 0.0f;
+		m.rows[0].arr[0] = 1.0f / (tanHalfFOV * aspectRatio);
+		m.rows[1].arr[1] = 1.0f / tanHalfFOV;
+		m.rows[2].arr[2] = (-zNear - zFar) / zRange;
+		m.rows[2].arr[3] = 2 * zFar * zNear / zRange;
+		m.rows[3].arr[2] = 1.0f;
+		m.rows[3].arr[3] = 0.0f;
 		
 		return m;
 	}
@@ -504,12 +504,12 @@ struct MAT4 {
 		float height = top - bottom;
 		float depth = far - near;
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = 2 / width;	
-		m.rows[0].SSE_VEC[3] = -(right + left) / width;
-		m.rows[1].SSE_VEC[1] = 2 / height;
-		m.rows[1].SSE_VEC[3] = -(top + bottom) / height;
-		m.rows[2].SSE_VEC[2] = -2 / depth;
-		m.rows[2].SSE_VEC[3] = -(far + near) / depth;
+		m.rows[0].arr[0] = 2 / width;	
+		m.rows[0].arr[3] = -(right + left) / width;
+		m.rows[1].arr[1] = 2 / height;
+		m.rows[1].arr[3] = -(top + bottom) / height;
+		m.rows[2].arr[2] = -2 / depth;
+		m.rows[2].arr[3] = -(far + near) / depth;
 
 		return m;
 	}
@@ -532,9 +532,9 @@ struct MAT4 {
 		VEC4 r = right;
 		VEC4 u = up;
 		MAT4 m;
-		m.rows[0].SSE_VEC[0] = r.SSE_VEC[0];	m.rows[0].SSE_VEC[1] = r.SSE_VEC[1];	m.rows[0].SSE_VEC[2] = r.SSE_VEC[2];
-		m.rows[1].SSE_VEC[0] = u.SSE_VEC[0];	m.rows[1].SSE_VEC[1] = u.SSE_VEC[1];	m.rows[1].SSE_VEC[2] = u.SSE_VEC[2];	
-		m.rows[2].SSE_VEC[0] = f.SSE_VEC[0];	m.rows[2].SSE_VEC[1] = f.SSE_VEC[1];	m.rows[2].SSE_VEC[2] = f.SSE_VEC[2];			
+		m.rows[0].arr[0] = r.arr[0];	m.rows[0].arr[1] = r.arr[1];	m.rows[0].arr[2] = r.arr[2];
+		m.rows[1].arr[0] = u.arr[0];	m.rows[1].arr[1] = u.arr[1];	m.rows[1].arr[2] = u.arr[2];	
+		m.rows[2].arr[0] = f.arr[0];	m.rows[2].arr[1] = f.arr[1];	m.rows[2].arr[2] = f.arr[2];			
 
 		return m;
 	}
@@ -548,14 +548,14 @@ struct MAT4 {
 		MAT4 m;
 		VEC4 tmp;
 		for (int16_t i = 0; i < 4; i++) {//iterate through other mat cols
-			tmp.SSE_VEC[0] = otherMAT4.rows[0].SSE_VEC[i];
-			tmp.SSE_VEC[1] = otherMAT4.rows[1].SSE_VEC[i];
-			tmp.SSE_VEC[2] = otherMAT4.rows[2].SSE_VEC[i];
-			tmp.SSE_VEC[3] = otherMAT4.rows[3].SSE_VEC[i];
-			m.rows[0].SSE_VEC[i] = rows[0].Dot(tmp);
-			m.rows[1].SSE_VEC[i] = rows[1].Dot(tmp);
-			m.rows[2].SSE_VEC[i] = rows[2].Dot(tmp);
-			m.rows[3].SSE_VEC[i] = rows[3].Dot(tmp);
+			tmp.arr[0] = otherMAT4.rows[0].arr[i];
+			tmp.arr[1] = otherMAT4.rows[1].arr[i];
+			tmp.arr[2] = otherMAT4.rows[2].arr[i];
+			tmp.arr[3] = otherMAT4.rows[3].arr[i];
+			m.rows[0].arr[i] = rows[0].Dot(tmp);
+			m.rows[1].arr[i] = rows[1].Dot(tmp);
+			m.rows[2].arr[i] = rows[2].Dot(tmp);
+			m.rows[3].arr[i] = rows[3].Dot(tmp);
 		}
 		return m;
 	}
@@ -565,7 +565,7 @@ struct Vertex {
 	VEC4 position;
 	Color c;
 	Vertex(float x, float y,float z, uint32_t col) {
-		position = VEC4(x, y,z,1);
+		position = VEC4(x, y,z,1.0f);
 		c = Color(col);
 	}
 	Vertex(const VEC4& pos,const Color& col) {
@@ -583,8 +583,8 @@ struct Vertex {
 
 	Vertex PrespDivide() const
 	{
-		return Vertex(VEC4(position.SSE_VEC[0] / position.SSE_VEC[3], position.SSE_VEC[1] / position.SSE_VEC[3],
-			position.SSE_VEC[2] / position.SSE_VEC[3], position.SSE_VEC[3]),this->c);
+		return Vertex(VEC4(position.arr[0] / position.arr[3], position.arr[1] / position.arr[3],
+			position.arr[2] / position.arr[3], position.arr[3]),this->c);
 	}
 
 };

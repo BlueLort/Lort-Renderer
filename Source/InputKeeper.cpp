@@ -33,8 +33,8 @@ void InputKeeper::addReleaseKey(const uint32_t & SDL_KEY)
 
  void InputKeeper::setMousePosition(const uint32_t& x, const uint32_t& y)
 {
-	mousePos.SSE_VEC[0] = (float)x;
-	mousePos.SSE_VEC[1] = (float)y;
+	mousePos.arr[0] = (float)x;
+	mousePos.arr[1] = (float)y;
 }
 
  bool InputKeeper::isKeyPressed(const uint32_t & SDL_KEY)

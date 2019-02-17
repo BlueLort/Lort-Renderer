@@ -41,10 +41,10 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Structures.h">
+    <ClInclude Include="Edge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Edge.h">
+    <ClInclude Include="Structures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

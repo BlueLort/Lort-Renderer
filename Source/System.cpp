@@ -56,7 +56,12 @@ void System::initSDL()
 void System::Run()
 {
 	uint32_t mod = 0;
-	projection = MAT4::getPerspective(70.0f, SCR_WIDTH / SCR_HEIGHT, 0.1f, 1000.0f);
+	projection = MAT4::getPerspective(
+		70.0f,
+		static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT)
+		, 0.1f
+		, 1000.0f);
+
 	while (running) {
 		dTime = getDeltaTime();
 		mod++;
@@ -122,13 +127,15 @@ void System::render()
 	static float counter = 0;
 	counter += dTime;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 1.0f, 2.5f);
-	model = model* MAT4::getRotation(0.0f, counter, 0.0f);
-	MAT4 MVP = projection *model;// no view matrix yet o_o
+	MAT4 model= MAT4::getTranslation(0.0f, 0.0f, 2.0f);
+	model = model* MAT4::getRotation(0.0f,0.0f,counter);
+	//TODO VIEW MATRIX
+	MAT4 MVP = projection * model;
+
 	Vertex v1=Vertex(-0.5f, -0.5f, 0.0f,(uint32_t) 0xfffffff).Transform(MVP);
 	Vertex v2=Vertex(0.0f, 0.5f, 0.0f, (uint32_t)0xfffffff).Transform(MVP);
 	Vertex v3=Vertex(0.5f, -0.5f, 0.0f, (uint32_t)0xfffffff).Transform(MVP);
-	LortRenderer->drawTriangle(v3, v2, v1);
+	LortRenderer->drawTriangle(v1, v2, v3);
 	LortRenderer->updateScreen();
 }
 
