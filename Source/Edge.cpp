@@ -3,30 +3,35 @@
 
 
 
-Edge::Edge(const Vertex & v1, const Vertex & v2)
+Edge::Edge(const Gradient& grad, const Vertex&  minYVert, const Vertex& maxYVert, const int8_t& minYVertIndex)
 {
-	this->yStart = (uint32_t)ceil(v1.position.arr[1]);
-	this->yEnd = (uint32_t)ceil(v2.position.arr[1]);
+	this->yStart = static_cast<uint32_t>(ceil(minYVert.pos.arr[1]));
+	this->yEnd = static_cast<uint32_t>(ceil(maxYVert.pos.arr[1]));
 
-	float yDist = v2.position.arr[1] - v1.position.arr[1];
-	float xDist = v2.position.arr[0] - v1.position.arr[0];
+	float yDist = maxYVert.pos.arr[1] - minYVert.pos.arr[1];
+	float xDist = maxYVert.pos.arr[0] - minYVert.pos.arr[0];
 
-	float yPrestep = yStart - v1.position.arr[1];
-	xStep = (float)xDist / (float)yDist;
-	current = v1.position.arr[0] + yPrestep * xStep;
+	float yPreStep = yStart - minYVert.pos.arr[1];
+	this->xStep = xDist / yDist;
+	this->currentX = minYVert.pos.arr[0] + yPreStep * xStep;
+
+	float xPreStep = currentX - minYVert.pos.arr[0];
+
+	this->color = grad.getColor(minYVertIndex) + grad.getColorYStep()*yPreStep + grad.getColorXStep()*xPreStep;
+	this->colorStep = grad.getColorYStep() + grad.getColorXStep()*xStep;
+	this->texCoords = grad.getTexCoords(minYVertIndex) + grad.getTexCoordsYStep()*yPreStep + grad.getTexCoordsXStep()*xPreStep;
+	this->texCoordsStep = grad.getTexCoordsYStep() + grad.getTexCoordsXStep()*xStep;
+	this->oneOverW= grad.getOneOverW(minYVertIndex) + grad.getOneOverWYStep()*yPreStep + grad.getOneOverWXStep()*xPreStep;
+	this->oneOverWStep = grad.getOneOverWYStep() + grad.getOneOverWXStep()*xStep;
 }
 
-Edge::Edge(const Edge & other)
-{
-	this->yStart = other.getYStart();
-	this->yEnd = other.getYEnd();
-	this->current = other.getCurrent();
-	this->xStep = other.getXStep();
-}
 
 void Edge::Step()
 {
-	current += xStep;
+	this->currentX = currentX + xStep;
+	this->color = color + colorStep;
+	this->texCoords = texCoords + texCoordsStep;
+	this->oneOverW = oneOverW + oneOverWStep;
 	
 }
 

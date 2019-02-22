@@ -3,6 +3,7 @@
 #include "Math.h"
 #include "Structures.h"
 #include "Edge.h"
+#include "Texture.h"
 #include <iostream>
 class Renderer
 {
@@ -34,9 +35,11 @@ private:
 	uint32_t	  halfScrHeight;
 	static Renderer rendererInstance;
 
+	Texture myTex=Texture(std::string("snow_grass2_d.jpg"));
+
 	void scanTriangle(const Vertex & v1, const Vertex & v2, const Vertex & v3, bool direction) const;
-	void scanEdges( Edge& e1,Edge& e2, bool direction)const;
-	void drawScanLine(const Edge& left, const Edge& right, const uint32_t & j)const;
+	void scanEdges(const Gradient& grad,Edge& e1,Edge& e2, bool direction)const;
+	void drawScanLine(const Gradient& grad,const Edge& left, const Edge& right, const uint32_t & y)const;
 
 };
 

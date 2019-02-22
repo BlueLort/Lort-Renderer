@@ -4,6 +4,7 @@
 #include <iostream>
 #define MAX(a,b) (a>b?a:b)
 #define MIN(a,b) (a<b?a:b)
+#define LERP(a,b,f) ((b - a)*f + a)
 struct VEC4 {
 	F32vec4 arr;
 	VEC4() {
@@ -310,6 +311,9 @@ struct Color {
 		this->b = b;
 		this->a = a;
 	}
+	inline uint32_t get32BitValue() const {
+		return static_cast<uint32_t>(this->r << 24 | this->g << 16 | this->b << 8 | this->a << 0);
+	}
 	Color operator +(const Color& otherColor) const{
 		Color v(this->r + otherColor.r, this->g + otherColor.g, this->b + otherColor.b, this->a + otherColor.a);
 		return v;
@@ -382,8 +386,8 @@ struct MAT4 {
 		RZ.rows[0].arr[0] = cos(z); RZ.rows[0].arr[1] = -sin(z);
 		RZ.rows[1].arr[0] = sin(z); RZ.rows[1].arr[1] = cos(z);		
 
-		RY.rows[0].arr[0] = cos(y); RY.rows[0].arr[2] = sin(y);
-		RY.rows[2].arr[0] = -sin(y); RY.rows[2].arr[2] = cos(y);
+		RY.rows[0].arr[0] = cos(y); RY.rows[0].arr[2] = -sin(y);
+		RY.rows[2].arr[0] = sin(y); RY.rows[2].arr[2] = cos(y);
 
 		RX.rows[1].arr[1] = cos(x); RX.rows[1].arr[2] = -sin(x);
 		RX.rows[2].arr[1] = sin(x); RX.rows[2].arr[2] = cos(x);
@@ -478,29 +482,33 @@ struct MAT4 {
 
 };
 struct Vertex {
-	VEC4 position;
-	Color c;
-	Vertex(float x, float y,float z, uint32_t col) {
-		position = VEC4(x, y,z,1.0f);
-		c = Color(col);
+	VEC4 pos;
+	VEC2 texCoords;
+	Color col;
+	Vertex(const float& x,const float& y,const float& z,const float& u, const float& v,const uint32_t& col) {
+		this->pos = VEC4(x, y,z,1.0f);
+		this->texCoords = VEC2(u,v);
+		this->col = Color(col);
 	}
-	Vertex(const VEC4& pos,const Color& col) {
-		position = VEC4(pos);
-		c = Color(col);
+	Vertex(const VEC4& pos,const VEC2& texCoords,const Color& col) {
+		this->pos = VEC4(pos);
+		this->texCoords = texCoords;
+		this->col = Color(col);
 	}
 	Vertex(const VEC4& pos) {
-		position = VEC4(pos);
-		c = Color(0xffffffff);
+		this->pos = VEC4(pos);
+		this->col = Color(0xffffffff);
 	}
+
 	Vertex Transform(const MAT4& transMat) const
 	{
-		return Vertex(transMat.Transform(position), this->c);
+		return Vertex(transMat.Transform(pos),this->texCoords, this->col);
 	}
 
 	Vertex PrespDivide() const
 	{
-		return Vertex(VEC4(position.arr[0] / position.arr[3], position.arr[1] / position.arr[3],
-			position.arr[2] / position.arr[3], position.arr[3]),this->c);
+		return Vertex(VEC4(pos.arr[0] / pos.arr[3], pos.arr[1] / pos.arr[3],
+			pos.arr[2] / pos.arr[3], pos.arr[3]), this->texCoords,this->col);
 	}
 
 };

@@ -20,12 +20,15 @@ System::System() : running(true)
 System::~System()
 {
 	destroy();
+	delete this->systemInstance;
 }
 
 void System::destroy()
 {
+
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+
 
 }
 
@@ -67,7 +70,7 @@ void System::Run()
 		mod++;
 		pollInputs();
 		processInputs();
-		if (mod == 128) {//print deltatime once each x frame
+		if (mod == 128) {//print deltatime once each 128 frame
 			printf("FPS:%f\n", 1 / dTime);
 			mod = 0;
 		}
@@ -122,19 +125,22 @@ void System::processInputs()
 void System::render()
 {
 
-	LortRenderer->clearScreen(); //CLEARING MAKE THE SCREEN FLICKER(SDL WAY) FIX THAT
+	LortRenderer->clearScreen();
 
 	static float counter = 0;
 	counter += dTime;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.0f, 2.0f);
-	model = model* MAT4::getRotation(0.0f, counter,counter);
+	MAT4 model= MAT4::getTranslation(0.0f, 0.0f, 3.0f);
+	model = model* MAT4::getRotation(0.0f,counter,0.0f);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
 
-	Vertex v1=Vertex(-0.5f, -0.5f, 0.0f,(uint32_t) 0xfffffff).Transform(MVP);
-	Vertex v2=Vertex(0.0f, 0.5f, 0.0f, (uint32_t)0xfffffff).Transform(MVP);
-	Vertex v3=Vertex(0.5f, -0.5f, 0.0f, (uint32_t)0xfffffff).Transform(MVP);
+	//Vertex v1=Vertex(-0.5f, -0.5f, 0.0f ,1.0f,0.0f , static_cast<uint32_t>(0x00ff00ff)).Transform(MVP);
+	//Vertex v2=Vertex(0.0f , 0.5f , 0.0f ,1.0f,1.0f, static_cast<uint32_t>(0xff0000ff)).Transform(MVP);
+	//Vertex v3=Vertex(0.5f , -0.5f , 0.0f,0.0f,0.0f , static_cast<uint32_t>(0x0000ffff)).Transform(MVP);
+	Vertex v1 = Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, static_cast<uint32_t>(0x00ff00ff)).Transform(MVP);
+	Vertex v2 = Vertex(0.0f, 1.0f, 0.0f, 0.5f, 1.0f, static_cast<uint32_t>(0xff0000ff)).Transform(MVP);
+	Vertex v3 = Vertex(1.0f, -1.0f, 0.0f, 1.0f, 0.0f, static_cast<uint32_t>(0x0000ffff)).Transform(MVP);
 	LortRenderer->drawTriangle(v1, v2, v3);
 	LortRenderer->updateScreen();
 }
