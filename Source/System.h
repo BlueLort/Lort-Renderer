@@ -44,6 +44,10 @@ private:
 	InputKeeper*   inputKeeper = nullptr;//input keeper class that keeps press,held,released keys
 	Renderer*      LortRenderer;
 
+	//TEST VERTICES
+	Vertex v1 = Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, static_cast<uint32_t>(0x00ff00ff));
+	Vertex v2 = Vertex(0.0f, 1.0f, 0.0f, 0.5f, 1.0f, static_cast<uint32_t>(0xff0000ff));
+	Vertex v3 = Vertex(1.0f, -1.0f, 0.0f, 1.0f, 0.0f, static_cast<uint32_t>(0x0000ffff));
 
 };
 

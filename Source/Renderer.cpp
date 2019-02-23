@@ -67,53 +67,64 @@ void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, co
 	Edge topToMid= Edge(grad,minYVert, midYVert,0);
 	Edge midToBot = Edge(grad,midYVert, maxYVert,1);
 
-	scanEdges(grad,topToBot, topToMid, direction);
-	scanEdges(grad,topToBot, midToBot, direction);
+	scanEdges(topToBot, topToMid, direction);
+	scanEdges(topToBot, midToBot, direction);
 	
 	
 }
 
-void Renderer::scanEdges(const Gradient& grad,Edge & e1,Edge & e2, bool direction) const
+void Renderer::scanEdges(Edge & e1,Edge & e2, bool direction) const
 {
 	uint32_t yStart =  e2.getYStart();
 	uint32_t yEnd = e2.getYEnd();
 	for (uint32_t y = yStart; y < yEnd; y++)
 	{
 		if(!direction)
-		drawScanLine(grad,e1, e2, y);
+		drawScanLine(e1, e2, y);
 		else {
-			drawScanLine(grad,e2, e1, y);
+			drawScanLine(e2, e1, y);
 		}
 		e1.Step();
 		e2.Step();
 	}
 }
-void Renderer::drawScanLine(const Gradient& grad,const Edge& left, const Edge& right, const uint32_t & y) const
+void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t & y) const
 {
 	uint32_t xMin = static_cast<uint32_t>(ceil(left.getCurrentX()));
 	uint32_t xMax = static_cast<uint32_t>(ceil(right.getCurrentX()));
 
 	float xPrestep = xMin - left.getCurrentX();
+	float xDist = right.getCurrentX() - left.getCurrentX();
 
+	///INIT GRADIANTS' STEP 
+	///(here to avoid floating point errors which results in array out of bounds)
+	//VEC4 colorStep = (right.getColor() - left.getColor()) / xDist;
+	VEC2 texCoordsStep = (right.getTexCoords() - left.getTexCoords()) / xDist;
+	float oneOverWStep = (right.getOneOverW() - left.getOneOverW()) / xDist;
 
-	//VEC4 color = left.getColor() + grad.getColorXStep()*xPrestep;
-	VEC2 texCoords = left.getTexCoords() + grad.getTexCoordsXStep()*xPrestep;
-	float oneOverW = left.getOneOverW() + grad.getOneOverWXStep()*xPrestep;
+	///INIT GRADIANTS
+	//VEC4 color = left.getColor() + colorStep*xPrestep;
+	VEC2 texCoords = left.getTexCoords() + texCoordsStep*xPrestep;
+	float oneOverW = left.getOneOverW() + oneOverWStep*xPrestep;
 	for (uint32_t x = xMin; x < xMax; x++)
 	{
+		///GET INFORMATION
 		float W = 1.0f / oneOverW;
-		uint16_t X = (int)((texCoords.arr[0] * W) * (float)(myTex.getWidth() - 1) + 0.5f);
-		uint16_t Y = (int)((texCoords.arr[1] * W) * (float)(myTex.getHeight() - 1) + 0.5f);
+		uint16_t X = static_cast<uint16_t>(((texCoords.arr[0] * W) * static_cast<float>((myTex.getWidth() - 1) + 0.5f)));
+		uint16_t Y = static_cast<uint16_t>(((texCoords.arr[1] * W) * static_cast<float>((myTex.getHeight() - 1) + 0.5f)));
 		Color c = myTex.getTexColorAt(X,Y);
 		//uint8_t r = static_cast<uint8_t>(color.arr[0]);
 		//uint8_t g = static_cast<uint8_t>(color.arr[1]);
 		//uint8_t b = static_cast<uint8_t>(color.arr[2]);
 		//uint8_t a = static_cast<uint8_t>(color.arr[3]);
+		
+		///APPLY TO PIXEL
 		drawPixel(x, y ,c.r, c.g, c.b ,c.a);
 
-		//color = color + grad.getColorXStep();
-		texCoords = texCoords + grad.getTexCoordsXStep();
-		oneOverW = oneOverW + grad.getOneOverWXStep();
+		///INCREASE FACTORS 
+		//color = color + colorStep;
+		texCoords = texCoords + texCoordsStep;
+		oneOverW = oneOverW + oneOverWStep;
 	}
 }
 void Renderer::drawPixel(const uint32_t & x, const uint32_t & y, const uint8_t & r, const uint8_t & g, const uint8_t & b, const uint8_t & a) const
