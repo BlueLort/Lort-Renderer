@@ -130,12 +130,14 @@ void System::render()
 	static float counter = 0;
 	counter += dTime;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.0f, 3.0f);
+	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,5.0f);
 	model = model* MAT4::getRotation(0.0f,counter,0.0f);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
 
-	LortRenderer->drawTriangle(v1.Transform(MVP), v2.Transform(MVP), v3.Transform(MVP));
+	sphere.setMVP(MVP);
+	sphere.render(*LortRenderer);
+	//LortRenderer->drawTriangle(v1.Transform(MVP), v2.Transform(MVP), v3.Transform(MVP));
 	LortRenderer->updateScreen();
 }
 

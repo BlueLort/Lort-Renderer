@@ -35,11 +35,13 @@ private:
 	uint32_t	  halfScrHeight;
 	static Renderer rendererInstance;
 
-	Texture myTex=Texture(std::string("snow_grass2_d.jpg"));
+	Texture myTex=Texture(std::string("brickwall.jpg"));
 
 	void scanTriangle(const Vertex & v1, const Vertex & v2, const Vertex & v3, bool direction) const;
-	void scanEdges(Edge& left,Edge& right, bool direction)const;
-	void drawScanLine(const Edge& left, const Edge& right, const uint32_t & y)const;
+	void scanDrawEdges(Edge& left,Edge& right)const;
+	void scanDrawEdgesInversed(Edge& left, Edge& right)const;
+	void drawScanLine(const Edge& left, const Edge& right, const uint32_t & y) const;
+	bool checkDirection(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 
 };
 

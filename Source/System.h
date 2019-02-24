@@ -5,10 +5,7 @@
 #include "InputKeeper.h"
 #include "Renderer.h"
 #include "Structures.h"
-#include <glm/vec3.hpp> // glm::vec3
-#include <glm/vec4.hpp> // glm::vec4
-#include <glm/mat4x4.hpp> // glm::mat4
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspect
+#include "Mesh.h"
 #include <random>
 const uint16_t    SCR_WIDTH = 1024;
 const uint16_t    SCR_HEIGHT = 768;
@@ -45,9 +42,11 @@ private:
 	Renderer*      LortRenderer;
 
 	//TEST VERTICES
-	Vertex v1 = Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, static_cast<uint32_t>(0x00ff00ff));
-	Vertex v2 = Vertex(0.0f, 1.0f, 0.0f, 0.5f, 1.0f, static_cast<uint32_t>(0xff0000ff));
-	Vertex v3 = Vertex(1.0f, -1.0f, 0.0f, 1.0f, 0.0f, static_cast<uint32_t>(0x0000ffff));
+	Vertex v1 = Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,0.0f,1.0f,0.0f, static_cast<uint32_t>(0x00ff00ff));
+	Vertex v2 = Vertex(0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f ,static_cast<uint32_t>(0xff0000ff));
+	Vertex v3 = Vertex(1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<uint32_t>(0x0000ffff));
+
+	Mesh sphere = Mesh(std::string("Sphere.obj"),true,true);
 
 };
 

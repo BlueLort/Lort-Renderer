@@ -120,6 +120,7 @@ struct VEC3 {
 		arr[0] = 0;
 		arr[1] = 0;
 		arr[2] = 0;
+		arr[3] = 0.0f;
 	}
 	VEC3(const VEC3& otherVEC3) {
 		arr = otherVEC3.arr;
@@ -131,11 +132,13 @@ struct VEC3 {
 		arr[0] = x;
 		arr[1] = y;
 		arr[2] = z;
+		arr[3] = 0.0f;
 	}
 	VEC3(const float& num) {
 		arr[0] = num;
 		arr[1] = num;
 		arr[2] = num;
+		arr[3] = 0.0f;
 	}
 	VEC3 Normalize() const{
 		VEC3 vec;
@@ -212,8 +215,10 @@ struct VEC3 {
 struct VEC2 {
 	F32vec4 arr;
 	VEC2() {
-		arr[0] = 0;
-		arr[1] = 0;
+		arr[0] = 0.0f;
+		arr[1] = 0.0f;
+		arr[2] = 0.0f;
+		arr[3] = 0.0f;
 	}
 	VEC2(const VEC2& otherVEC2) {
 		arr = otherVEC2.arr;
@@ -224,10 +229,14 @@ struct VEC2 {
 	VEC2(const float& x, const float& y) {
 		arr[0] = x;
 		arr[1] = y;
+		arr[2] = 0.0f;
+		arr[3] = 0.0f;
 	}
 	VEC2(const float& num) {
 		arr[0] = num;
 		arr[1] = num;
+		arr[2] = 0.0f;
+		arr[3] = 0.0f;
 	}
 	float Dot(const VEC2& V)const {
 		VEC2 ans = arr * V.arr;//EXPLICIT CASTING
@@ -484,31 +493,45 @@ struct MAT4 {
 struct Vertex {
 	VEC4 pos;
 	VEC2 texCoords;
+	VEC3 normal;
 	Color col;
-	Vertex(const float& x,const float& y,const float& z,const float& u, const float& v,const uint32_t& col) {
+	Vertex() {
+		this->pos = VEC4();
+		pos.arr[3] = 1.0f;
+		this->texCoords = VEC2();
+		this->normal = VEC3();
+		this->col = Color();
+	}
+	Vertex(const float& x,const float& y,const float& z
+		,const float& u, const float& v
+		,const float& nx,const float& ny,const float &nz
+		,const uint32_t& col) {
 		this->pos = VEC4(x, y,z,1.0f);
 		this->texCoords = VEC2(u,v);
+		this->normal = VEC3(nx, ny, nz);
 		this->col = Color(col);
 	}
-	Vertex(const VEC4& pos,const VEC2& texCoords,const Color& col) {
+	Vertex(const VEC4& pos,const VEC2& texCoords,const VEC3& normal,const Color& col) {
 		this->pos = VEC4(pos);
 		this->texCoords = texCoords;
+		this->normal = normal;
 		this->col = Color(col);
 	}
-	Vertex(const VEC4& pos) {
+	Vertex(const VEC4& pos, const VEC2& texCoords, const VEC3& normal) {
 		this->pos = VEC4(pos);
-		this->col = Color(0xffffffff);
+		this->texCoords = texCoords;
+		this->normal = normal;
+		this->col = Color();
 	}
-
 	Vertex Transform(const MAT4& transMat) const
 	{
-		return Vertex(transMat.Transform(pos),this->texCoords, this->col);
+		return Vertex(transMat.Transform(pos), this->texCoords, this->normal, this->col);
 	}
 
 	Vertex PrespDivide() const
 	{
 		return Vertex(VEC4(pos.arr[0] / pos.arr[3], pos.arr[1] / pos.arr[3],
-			pos.arr[2] / pos.arr[3], pos.arr[3]), this->texCoords,this->col);
+			pos.arr[2] / pos.arr[3], pos.arr[3]), this->texCoords,this->normal,this->col);
 	}
 
 };

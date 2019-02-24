@@ -38,6 +38,8 @@ void Renderer::drawTriangle(const Vertex&  v1, const Vertex&  v2, const Vertex& 
 		static_cast<float>(halfScrWidth)
 		,static_cast<float>(halfScrHeight));
 
+	if (!checkDirection(v1, v2, v3))return;//back-face culling
+
 	Vertex V1 = v1.Transform(toScrSpace).PrespDivide();
 	Vertex V2 = v2.Transform(toScrSpace).PrespDivide();
 	Vertex V3 = v3.Transform(toScrSpace).PrespDivide();
@@ -51,11 +53,7 @@ void Renderer::drawTriangle(const Vertex&  v1, const Vertex&  v2, const Vertex& 
 	if (V3.pos.arr[1] < V2.pos.arr[1]) {
 		std::swap(V3, V2);
 	}
-	VEC4 p1_p2 = V2.pos - V1.pos;
-	VEC4 p1_p3 = V3.pos - V1.pos;
-	float crossAns = p1_p2.arr[0] * p1_p3.arr[1] - p1_p2.arr[1] * p1_p3.arr[0];
-	bool dir = 0;
-	if (crossAns < 0)dir = 1;
+	bool dir = checkDirection(V1, V2, V3);
 
 	scanTriangle(V1, V2, V3, dir);
 }
@@ -66,28 +64,43 @@ void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, co
 	Edge topToBot = Edge(grad,minYVert, maxYVert,0);
 	Edge topToMid= Edge(grad,minYVert, midYVert,0);
 	Edge midToBot = Edge(grad,midYVert, maxYVert,1);
-
-	scanEdges(topToBot, topToMid, direction);
-	scanEdges(topToBot, midToBot, direction);
-	
+	if (!direction) {
+		scanDrawEdges(topToBot, topToMid);
+		scanDrawEdges(topToBot, midToBot);
+	}
+	else {
+		scanDrawEdgesInversed(topToBot, topToMid);
+		scanDrawEdgesInversed(topToBot, midToBot);
+	}
 	
 }
 
-void Renderer::scanEdges(Edge & e1,Edge & e2, bool direction) const
+void Renderer::scanDrawEdges(Edge & left, Edge & right) const
 {
-	uint32_t yStart =  e2.getYStart();
-	uint32_t yEnd = e2.getYEnd();
+	uint32_t yStart = right.getYStart();
+	uint32_t yEnd = right.getYEnd();
+
 	for (uint32_t y = yStart; y < yEnd; y++)
 	{
-		if(!direction)
-		drawScanLine(e1, e2, y);
-		else {
-			drawScanLine(e2, e1, y);
-		}
-		e1.Step();
-		e2.Step();
+		drawScanLine(left, right, y);
+		left.Step();
+		right.Step();
 	}
 }
+
+void Renderer::scanDrawEdgesInversed(Edge & left, Edge & right) const
+{
+	uint32_t yStart = right.getYStart();
+	uint32_t yEnd = right.getYEnd();
+
+	for (uint32_t y = yStart; y < yEnd; y++)
+	{
+		drawScanLine(right, left, y);
+		left.Step();
+		right.Step();
+	}
+}
+
 void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t & y) const
 {
 	uint32_t xMin = static_cast<uint32_t>(ceil(left.getCurrentX()));
@@ -127,11 +140,17 @@ void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t 
 		oneOverW = oneOverW + oneOverWStep;
 	}
 }
+
 void Renderer::drawPixel(const uint32_t & x, const uint32_t & y, const uint8_t & r, const uint8_t & g, const uint8_t & b, const uint8_t & a) const
 {
 	*(static_cast<uint32_t*>(surface->pixels) + surface->w * y + x) = SDL_MapRGBA(surface->format, r, g, b, a);
 }
-
+inline bool Renderer::checkDirection(const Vertex & v1, const Vertex & v2, const Vertex & v3) const {
+	VEC4 p1_p2 = v2.pos - v1.pos;
+	VEC4 p1_p3 = v3.pos - v1.pos;
+	float crossZ = p1_p2.Cross(p1_p3).arr[2];// Z is the axis to tell us if the shape facing the camera or not
+	return (crossZ < 0.0f);
+}
 
 void Renderer::updateScreen() const
 {
