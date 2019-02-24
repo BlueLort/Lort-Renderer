@@ -5,7 +5,7 @@ class Texture
 public:
 	Texture(const std::string& filePath);
 	inline Color getTexColorAt(const uint16_t& x, const uint16_t& y) const {
-		return texColors->at(width*y + x).second;
+		return texColors[width*y + x];
 	}
 	inline int getWidth() const { return width; }
 	inline int getHeight() const { return height; }
@@ -15,7 +15,7 @@ private:
 	int width;
 	int height;
 	int nChannels;
-	std::vector< std::pair<uint32_t, Color> >* texColors;
+	 Color* texColors;
 
 };
 

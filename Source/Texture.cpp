@@ -10,6 +10,5 @@ Texture::Texture(const std::string & filePath)
 
 Texture::~Texture()
 {
-	texColors->clear();
-	delete texColors;
+	delete [] texColors;
 }

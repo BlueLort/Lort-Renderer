@@ -14,11 +14,12 @@ FilesManager::~FilesManager()
 	delete filesManagerInstance;
 }
 
-std::vector< std::pair<uint32_t, Color> >* FilesManager::readImage(const std::string & filePath, int & width, int & height, int & nrChannels) const
+Color* FilesManager::readImage(const std::string & filePath, int & width, int & height, int & nrChannels) const
 {
-	std::vector< std::pair<uint32_t, Color> >* imageArray=new std::vector< std::pair<uint32_t, Color> >;
+	
 	unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
-	imageArray->reserve(width*height);
+	Color* imageArray = new Color[width*height];
+	uint32_t k=0;
 	if (data)
 	{
 		unsigned bytePerPixel = nrChannels;
@@ -31,7 +32,7 @@ std::vector< std::pair<uint32_t, Color> >* FilesManager::readImage(const std::st
 				g = pixelOffset[1];
 				b = pixelOffset[2];
 				a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
-				imageArray->push_back(std::pair<uint32_t,Color>(width * y + x, Color(r, g, b, a)));
+				imageArray[k++]= Color(r, g, b, a);
 
 			}
 		}

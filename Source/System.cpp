@@ -70,10 +70,10 @@ void System::Run()
 		mod++;
 		pollInputs();
 		processInputs();
-		if (mod == 128) {//print deltatime once each 128 frame
+	//	if (mod == 128) {//print deltatime once each 128 frame
 			printf("FPS:%f\n", 1 / dTime);
 			mod = 0;
-		}
+		//}
 		render();
 		update();
 	}
@@ -130,7 +130,7 @@ void System::render()
 	static float counter = 0;
 	counter += dTime;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,5.0f);
+	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,2.0f);
 	model = model* MAT4::getRotation(0.0f,counter,0.0f);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
