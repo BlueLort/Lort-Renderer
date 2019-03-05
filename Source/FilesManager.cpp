@@ -14,17 +14,17 @@ FilesManager::~FilesManager()
 	delete filesManagerInstance;
 }
 
-Color* FilesManager::readImage(const std::string & filePath, int & width, int & height, int & nrChannels) const
+uint32_t* FilesManager::readImage(const std::string & filePath, int & width, int & height, int & nrChannels) const
 {
 	
 	unsigned char *data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
-	Color* imageArray = new Color[width*height];
+	uint32_t* imageArray = new uint32_t[width*height];
 	uint32_t k=0;
 	if (data)
 	{
 		unsigned bytePerPixel = nrChannels;
-		unsigned char* pixelOffset;
-		unsigned char r, g, b, a;
+		uint8_t* pixelOffset;
+		uint8_t r, g, b, a;
 		for (uint16_t y = 0; y < height; y++) {
 			for (uint16_t x = 0; x <width; x++) {
 				pixelOffset = data + (width*y + x) * bytePerPixel;
@@ -32,7 +32,8 @@ Color* FilesManager::readImage(const std::string & filePath, int & width, int & 
 				g = pixelOffset[1];
 				b = pixelOffset[2];
 				a = nrChannels >= 4 ? pixelOffset[3] : 0xff;
-				imageArray[k++]= Color(r, g, b, a);
+				//SDL FORMAT IS ARGB
+				imageArray[k++]= (a <<24 ) | ( r << 16) | ( g << 8) | (b);
 
 			}
 		}

@@ -12,7 +12,7 @@ Mesh::Mesh(const std::string& filePath,const bool& texIncluded , const bool& nor
 
 void Mesh::render(const Renderer& renderer) const
 {
-	for (uint32_t i = 0; i < vertices.size(); i= i + 3) {
+	for (int32_t i = 0; i < vertices.size(); i= i + 3) {
 		renderer.drawTriangle(
 			  vertices[i].Transform(MVP)
 			, vertices[i + 1].Transform(MVP)

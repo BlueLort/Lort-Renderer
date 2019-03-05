@@ -24,11 +24,9 @@ Renderer::~Renderer()
 void Renderer::clearScreen() const
 {
 	SDL_LockSurface(surface);
-	//get color in format ARGB as clearColor 32bit is RGBA 
-	uint32_t clearColor32Bit_ARGB = clearColor.get32BitValue()<<24;//get Alpha at front
-	clearColor32Bit_ARGB |= clearColor.get32BitValue()>>8;//Remove alpha from the RGBA to be RGB
 
-	SDL_FillRect(surface, NULL,clearColor32Bit_ARGB);
+
+	SDL_FillRect(surface, NULL,clearColor);
 }
 
 
@@ -54,96 +52,83 @@ void Renderer::drawTriangle(const Vertex&  v1, const Vertex&  v2, const Vertex& 
 		std::swap(V3, V2);
 	}
 	bool dir = checkDirection(V1, V2, V3);
-
 	scanTriangle(V1, V2, V3, dir);
 }
 void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert, bool direction) const
 {
-	Gradient grad(minYVert, midYVert, maxYVert);
+	Gradient grad=Gradient(minYVert, midYVert, maxYVert);
 
-	Edge topToBot = Edge(grad,minYVert, maxYVert,0);
-	Edge topToMid= Edge(grad,minYVert, midYVert,0);
-	Edge midToBot = Edge(grad,midYVert, maxYVert,1);
+	Edge topToBot = Edge(grad,minYVert, maxYVert, 0);
+	Edge topToMid = Edge(grad,minYVert, midYVert, 0);
+	Edge midToBot = Edge(grad,midYVert, maxYVert, 1);
+
+	
+	
 	if (!direction) {
-		scanDrawEdges(topToBot, topToMid);
-		scanDrawEdges(topToBot, midToBot);
+		drawEdgeToEdge(grad,topToBot, topToMid);
+		drawEdgeToEdge(grad,topToBot, midToBot);
 	}
 	else {
-		scanDrawEdgesInversed(topToBot, topToMid);
-		scanDrawEdgesInversed(topToBot, midToBot);
+		drawEdgeToEdgeInversed(grad,topToBot, topToMid);
+		drawEdgeToEdgeInversed(grad,topToBot, midToBot);
 	}
-	
+
 }
-
-void Renderer::scanDrawEdges(Edge & left, Edge & right) const
+void Renderer::drawEdgeToEdge(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge) const
 {
-	uint32_t yStart = right.getYStart();
-	uint32_t yEnd = right.getYEnd();
-
-	for (uint32_t y = yStart; y < yEnd; y++)
+	uint32_t yStart = right_shortEdge.getYStart();
+	uint32_t yEnd = right_shortEdge.getYEnd();
+	uint32_t* currentPixRow = reinterpret_cast<uint32_t*>(surface->pixels) + right_shortEdge.getYStart() * scrWidth;
+	texData TD = myTex.getTexData();
+	for (int32_t y = yStart; y < yEnd; y++)
 	{
-		drawScanLine(left, right, y);
-		left.Step();
-		right.Step();
+		drawLineEdgeToEdge(grad,left_tallEdge, right_shortEdge, y,TD,currentPixRow);
+		left_tallEdge.Step();
+		right_shortEdge.Step();
+		currentPixRow = currentPixRow + scrWidth;
 	}
+
 }
-
-void Renderer::scanDrawEdgesInversed(Edge & left, Edge & right) const
+void Renderer::drawEdgeToEdgeInversed(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge) const
 {
-	uint32_t yStart = right.getYStart();
-	uint32_t yEnd = right.getYEnd();
+	uint32_t yStart = right_shortEdge.getYStart();
+	uint32_t yEnd = right_shortEdge.getYEnd();
+	uint32_t* currentPixRow = reinterpret_cast<uint32_t*>(surface->pixels) + right_shortEdge.getYStart() * scrWidth;
+	texData TD = myTex.getTexData();
 
-	for (uint32_t y = yStart; y < yEnd; y++)
+	for (int32_t y = yStart; y < yEnd; y++)
 	{
-		drawScanLine(right, left, y);
-		left.Step();
-		right.Step();
+		drawLineEdgeToEdge(grad,right_shortEdge,left_tallEdge, y,TD,currentPixRow);
+		left_tallEdge.Step();
+		right_shortEdge.Step();
+		currentPixRow = currentPixRow + scrWidth;
 	}
+
 }
-
-void Renderer::drawScanLine(const Edge& left, const Edge& right, const uint32_t & y) const
+void Renderer::drawLineEdgeToEdge(const Gradient& grad, Edge & left, Edge & right,int32_t& y,texData& td, uint32_t* currentPixRow) const
 {
-	uint32_t xMin = static_cast<uint32_t>(ceil(left.getCurrentX()));
-	uint32_t xMax = static_cast<uint32_t>(ceil(right.getCurrentX()));
+	uint32_t xMin = left.getCurrentX();
+	uint32_t xMax = right.getCurrentX();
 
-	float xPrestep = xMin - left.getCurrentX();
-	float xDist = right.getCurrentX() - left.getCurrentX();
+	uint32_t texCoordsUXStep = grad.getTexCoordsUXStep();
+	uint32_t texCoordsVXStep = grad.getTexCoordsVXStep();
+	uint32_t oneOverWXStep = grad.getOneOverWXStep();
+	uint32_t texCoordsU = left.getTexCoordsU();
+	uint32_t texCoordsV = left.getTexCoordsV();
+	uint32_t oneOverW = left.getOneOverW();
 
-	///INIT GRADIANTS' STEP 
-	///(here to avoid floating point errors which results in array out of bounds)
-	//VEC4 colorStep = (right.getColor() - left.getColor()) / xDist;
-	VEC2 texCoordsStep = (right.getTexCoords() - left.getTexCoords()) / xDist;
-	float oneOverWStep = (right.getOneOverW() - left.getOneOverW()) / xDist;
+	for (int32_t x = xMin; x < xMax; x += 1 << PSCAL) {
 
-	///INIT GRADIANTS
-	//VEC4 color = left.getColor() + colorStep*xPrestep;
-	VEC2 texCoords = left.getTexCoords() + texCoordsStep*xPrestep;
-	float oneOverW = left.getOneOverW() + oneOverWStep*xPrestep;
-	for (uint32_t x = xMin; x < xMax; x++)
-	{
-		///GET INFORMATION
-		float W = 1.0f / oneOverW;
-		uint16_t X = static_cast<uint16_t>(((texCoords.arr[0] * W) * static_cast<float>((myTex.getWidth() - 1) + 0.5f)));
-		uint16_t Y = static_cast<uint16_t>(((texCoords.arr[1] * W) * static_cast<float>((myTex.getHeight() - 1) + 0.5f)));
-		Color c = myTex.getTexColorAt(X,Y);
-		//uint8_t r = static_cast<uint8_t>(color.arr[0]);
-		//uint8_t g = static_cast<uint8_t>(color.arr[1]);
-		//uint8_t b = static_cast<uint8_t>(color.arr[2]);
-		//uint8_t a = static_cast<uint8_t>(color.arr[3]);
-		
-		///APPLY TO PIXEL
-		drawPixel(x, y ,c.r, c.g, c.b ,c.a);
+		uint32_t texX = (((DIVFP(texCoordsU,oneOverW)) & UV_Wrap) << td.widthShift) >> PSCAL;
+		uint32_t texY = (((DIVFP(texCoordsV,oneOverW)) & UV_Wrap) << td.heightShift) >> PSCAL;
 
-		///INCREASE FACTORS 
-		//color = color + colorStep;
-		texCoords = texCoords + texCoordsStep;
-		oneOverW = oneOverW + oneOverWStep;
+		currentPixRow[x >> PSCAL] = td.texColors[texY * td.width + texX];
+		//currentPixRow[x >> PSCAL] = 0xffffffff;
+		texCoordsU = texCoordsU + texCoordsUXStep;
+		texCoordsV = texCoordsV + texCoordsVXStep;
+		oneOverW = oneOverW + oneOverWXStep;
+
 	}
-}
-
-void Renderer::drawPixel(const uint32_t & x, const uint32_t & y, const uint8_t & r, const uint8_t & g, const uint8_t & b, const uint8_t & a) const
-{
-	*(static_cast<uint32_t*>(surface->pixels) + surface->w * y + x) = SDL_MapRGBA(surface->format, r, g, b, a);
 }
 inline bool Renderer::checkDirection(const Vertex & v1, const Vertex & v2, const Vertex & v3) const {
 	VEC4 p1_p2 = v2.pos - v1.pos;

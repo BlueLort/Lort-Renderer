@@ -5,34 +5,46 @@
 
 Edge::Edge(const Gradient& grad, const Vertex&  minYVert, const Vertex& maxYVert, const int8_t& minYVertIndex)
 {
-	this->yStart = static_cast<uint32_t>(ceil(minYVert.pos.arr[1]));
-	this->yEnd = static_cast<uint32_t>(ceil(maxYVert.pos.arr[1]));
+	this->yStart = static_cast<uint32_t>(minYVert.pos.arr[1]+0.99f);
+	this->yEnd = static_cast<uint32_t>(maxYVert.pos.arr[1]+0.99f);
 
-	float yDist = maxYVert.pos.arr[1] - minYVert.pos.arr[1];
-	float xDist = maxYVert.pos.arr[0] - minYVert.pos.arr[0];
+	uint32_t xStart = static_cast<uint32_t>(minYVert.pos.arr[0] + 0.99f);
+	uint32_t xEnd = static_cast<uint32_t>(maxYVert.pos.arr[0] + 0.99f);
 
-	float yPreStep = yStart - minYVert.pos.arr[1];
-	this->xStep = xDist / yDist;
-	this->currentX = minYVert.pos.arr[0] + yPreStep * xStep;
+	uint32_t yDist = yEnd - yStart;
+	uint32_t xDist = xEnd - xStart;
+	
+	uint32_t v0 = static_cast<uint32_t>(minYVert.texCoords.arr[1] * PVAL);    
+	uint32_t v1 = static_cast<uint32_t>(maxYVert.texCoords.arr[1] * PVAL);    
 
-	float xPreStep = currentX - minYVert.pos.arr[0];
 
-	this->color = grad.getColor(minYVertIndex) + grad.getColorYStep()*yPreStep + grad.getColorXStep()*xPreStep;
-	this->colorStep = grad.getColorYStep() + grad.getColorXStep()*xStep;
-	this->texCoords = grad.getTexCoords(minYVertIndex) + grad.getTexCoordsYStep()*yPreStep + grad.getTexCoordsXStep()*xPreStep;
-	this->texCoordsStep = grad.getTexCoordsYStep() + grad.getTexCoordsXStep()*xStep;
-	this->oneOverW= grad.getOneOverW(minYVertIndex) + grad.getOneOverWYStep()*yPreStep + grad.getOneOverWXStep()*xPreStep;
-	this->oneOverWStep = grad.getOneOverWYStep() + grad.getOneOverWXStep()*xStep;
+	this->xScale = 0;
+	if (xDist != 0)xScale = (1 << PSCAL) / (xDist);
+
+	this->yScale = 0;
+	if (yDist != 0)yScale = (1 << PSCAL) / (yDist);
+
+	this->currentX = (xStart << PSCAL);
+	this->xStep = xDist * yScale;
+
+
+	this->texCoordsU = static_cast<uint32_t>(grad.getTexCoordsU(minYVertIndex)*PVAL);
+	this->texCoordsUStep = grad.getTexCoordsUYStep() + MULFP(grad.getTexCoordsUXStep(), xStep);
+	this->texCoordsV = static_cast<uint32_t>(grad.getTexCoordsV(minYVertIndex)*PVAL);
+	this->texCoordsVStep = grad.getTexCoordsVYStep() + MULFP(grad.getTexCoordsVXStep(), xStep);
+	this->oneOverW= static_cast<uint32_t>(grad.getOneOverW(minYVertIndex)*PVAL);
+	this->oneOverWStep = grad.getOneOverWYStep() + MULFP(grad.getOneOverWXStep(), xStep);
+
 }
 
 
 void Edge::Step()
 {
-	this->currentX = currentX + xStep;
-	this->color = color + colorStep;
-	this->texCoords = texCoords + texCoordsStep;
-	this->oneOverW = oneOverW + oneOverWStep;
-	
+	currentX = currentX + xStep;
+	texCoordsU = texCoordsU + texCoordsUStep;
+	texCoordsV = texCoordsV + texCoordsVStep;
+	oneOverW = oneOverW + oneOverWStep;
+
 }
 
 Edge::~Edge()

@@ -5,7 +5,9 @@
 
 Texture::Texture(const std::string & filePath)
 {
-	texColors = FilesManager::getFilesManagerInstance()->readImage(filePath,width,height,nChannels);
+	this->texColors = FilesManager::getFilesManagerInstance()->readImage(filePath,width,height,nChannels);
+	this->widthShift = log2(width);
+	this->heightShift = log2(height);
 }
 
 Texture::~Texture()

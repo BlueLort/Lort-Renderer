@@ -11,7 +11,7 @@ System::System() : running(true)
 	LortRenderer->setScreenHeight(SCR_HEIGHT);
 	LortRenderer->setWindow(window);
 	LortRenderer->setSurface(surface);
-	LortRenderer->setClearColor(Color(0, 0, 0, 255));
+	LortRenderer->setClearColor(0xff000000);//ARGB FORMAT!!!
 	LortRenderer->updateHalfScrSize();
 
 }
@@ -130,14 +130,14 @@ void System::render()
 	static float counter = 0;
 	counter += dTime;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,2.0f);
+	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,2.5f);
 	model = model* MAT4::getRotation(0.0f,counter,0.0f);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
 
 	sphere.setMVP(MVP);
-	sphere.render(*LortRenderer);
-	//LortRenderer->drawTriangle(v1.Transform(MVP), v2.Transform(MVP), v3.Transform(MVP));
+	//sphere.render(*LortRenderer);
+	LortRenderer->drawTriangle(v1.Transform(MVP), v2.Transform(MVP), v3.Transform(MVP));
 	LortRenderer->updateScreen();
 }
 

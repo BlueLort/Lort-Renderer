@@ -3,30 +3,31 @@
 class Gradient
 {
 public:
-	inline VEC4 getColorXStep() const { return colorXStep; }
-	inline VEC4 getColorYStep() const { return colorYStep; }
-	inline VEC2 getTexCoordsXStep() const { return texCoordsXStep; }
-	inline VEC2 getTexCoordsYStep() const { return texCoordsYStep; }
-	inline float getOneOverWXStep() const { return oneOverWXStep; }
-	inline float getOneOverWYStep() const { return oneOverWYStep; }
-	inline VEC4 getColor(const int8_t& index) const { return colArr[index]; }
-	inline VEC2 getTexCoords(const int8_t& index) const { return texCoords[index]; }
+	inline uint32_t getOneOverWXStep() const { return oneOverWXStep; }
+	inline uint32_t getOneOverWYStep() const { return oneOverWYStep; }
+		   
+	inline uint32_t getTexCoordsUXStep() const { return texCoordsUXStep; }
+	inline uint32_t getTexCoordsUYStep() const { return texCoordsUYStep; }
+	inline uint32_t getTexCoordsVXStep() const { return  texCoordsVXStep;}
+	inline uint32_t getTexCoordsVYStep() const { return  texCoordsVYStep; }
+
 	inline float getOneOverW(const int8_t& index) const { return oneOverW[index]; }
+	inline float getTexCoordsU(const int8_t& index) const { return oneOverW[index]; }
+	inline float getTexCoordsV(const int8_t& index) const { return oneOverW[index]; }
 
 	Gradient(const Vertex& minYVert, const Vertex& midYVert, const Vertex& maxYVert);
 	~Gradient();
 private:
-	VEC4 colArr[3];
 	float oneOverW[3];//For Perspective Texturing
-	VEC2 texCoords[3];
+	float texCoordsU[3];
+	float texCoordsV[3];
 
-
-	VEC4 colorXStep;
-	VEC4 colorYStep;
-	VEC2 texCoordsXStep;
-	VEC2 texCoordsYStep;
-	float oneOverWXStep;
-	float oneOverWYStep;
+	uint32_t texCoordsUXStep;
+	uint32_t texCoordsUYStep;
+	uint32_t texCoordsVXStep;
+	uint32_t texCoordsVYStep;
+	uint32_t oneOverWXStep;
+	uint32_t oneOverWYStep;
 
 };
 

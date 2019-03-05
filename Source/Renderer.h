@@ -16,7 +16,7 @@ public:
 	inline void setSurface(SDL_Surface* surface) { this->surface = surface; }
 	inline void setScreenWidth(const uint32_t& scrWidth) { this->scrWidth = scrWidth;}
 	inline void setScreenHeight(const uint32_t& scrWidth) { this->scrHeight = scrHeight;}
-	inline void setClearColor(const Color& c) { this->clearColor = c; }
+	inline void setClearColor(const uint32_t& c) { this->clearColor = c; }
 	void updateHalfScrSize() {
 		this->halfScrWidth = (uint32_t)(scrWidth / 2);
 		this->halfScrHeight = (uint32_t)(scrHeight / 2);
@@ -24,23 +24,25 @@ public:
 	void clearScreen() const;
 	void drawTriangle(const Vertex& v1,const Vertex& v2,const Vertex& v3) const;
 	void updateScreen() const;
-	void drawPixel(const uint32_t& x, const uint32_t& y, const uint8_t& r, const uint8_t& g, const uint8_t& b, const uint8_t& a)const;
+	//void drawPixel(const uint32_t& x, const uint32_t& y, const uint8_t& r, const uint8_t& g, const uint8_t& b, const uint8_t& a)const;
 private:
-	SDL_Window*	  window = nullptr;
+	SDL_Window* window = nullptr;
 	SDL_Surface* surface = nullptr;
-	Color		  clearColor;//color that clears the screen
-	uint32_t	  scrWidth;
-	uint32_t	  scrHeight;
-	uint32_t	  halfScrWidth;
-	uint32_t	  halfScrHeight;
+	uint32_t clearColor;//clear color in ARGB FORMAT
+	uint32_t scrWidth;
+	uint32_t scrHeight;
+	uint32_t halfScrWidth;
+	uint32_t halfScrHeight;
 	static Renderer rendererInstance;
+    Texture myTex=Texture(std::string("brickwall.jpg"));
+	//utility
+	int32_t UV_Wrap = (1 << PSCAL) - 1;
 
-	Texture myTex=Texture(std::string("brickwall.jpg"));
 
-	void scanTriangle(const Vertex & v1, const Vertex & v2, const Vertex & v3, bool direction) const;
-	void scanDrawEdges(Edge& left,Edge& right)const;
-	void scanDrawEdgesInversed(Edge& left, Edge& right)const;
-	void drawScanLine(const Edge& left, const Edge& right, const uint32_t & y) const;
+	void scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert, bool direction) const;
+	void drawEdgeToEdge(const Gradient& grad, Edge & left_shortEdge, Edge & right_tallEdge) const;
+	void drawEdgeToEdgeInversed(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge) const;
+	void drawLineEdgeToEdge(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge,int32_t& y, texData& td,uint32_t* currentPixRw) const;
 	bool checkDirection(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 
 };

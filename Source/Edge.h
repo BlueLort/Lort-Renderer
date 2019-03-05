@@ -7,14 +7,11 @@ class Edge
 public:
 	inline uint32_t getYStart() const{ return yStart; }
 	inline uint32_t getYEnd() const{ return yEnd; }
-	inline float getXStep() const { return xStep; }
-	inline float getCurrentX() const{ return currentX; }
-	inline VEC4 getColor() const { return color; }
-	inline VEC4 getColorStep() const { return colorStep; }
-	inline VEC2 getTexCoords() const { return texCoords; }
-	inline VEC2 getTexCoordsStep() const { return texCoordsStep; }
-	inline float getOneOverW() const { return oneOverW; }
-	inline float getOneOverWStep() const { return oneOverWStep; }
+	inline uint32_t getXStep() const { return xStep; }
+	inline uint32_t getCurrentX() const{ return currentX; }
+	inline uint32_t getTexCoordsU() const { return texCoordsU; }
+	inline uint32_t getTexCoordsV() const { return texCoordsV; }
+	inline uint32_t getOneOverW() const { return oneOverW; }
 
 	Edge(const Gradient& grad,const Vertex&  maxYVert, const Vertex& minYVert, const int8_t& minYVertIndex);
 	void Step();
@@ -22,14 +19,17 @@ public:
 private:
 	uint32_t yStart;
 	uint32_t yEnd;
-	float xStep;
-	float currentX;
-	VEC4 color;
-	VEC4 colorStep;
-	float oneOverW;
-	float oneOverWStep;
-	VEC2 texCoords;
-	VEC2 texCoordsStep;
+	uint32_t xStep;
+	uint32_t xScale;
+	uint32_t yScale;
+	uint32_t currentX;
+	uint32_t texCoordsU;
+	uint32_t texCoordsUStep;
+	uint32_t texCoordsV;
+	uint32_t texCoordsVStep;
+	uint32_t oneOverW;
+	uint32_t oneOverWStep;
+
 	
 };
 

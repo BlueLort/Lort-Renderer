@@ -10,7 +10,7 @@ class FilesManager
 public:
 	inline static FilesManager* getFilesManagerInstance() { return filesManagerInstance; }
 	~FilesManager();
-	Color* readImage(const std::string& filePath,int &width, int &height, int &nrChannels) const;
+	uint32_t* readImage(const std::string& filePath,int &width, int &height, int &nrChannels) const;
 	
 	
 	void readOBJModel(const std::string& filePath,std::vector<Vertex>& vertices, const bool Tex_Norm_Included[2]) const;

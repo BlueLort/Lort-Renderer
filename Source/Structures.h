@@ -5,6 +5,13 @@
 #define MAX(a,b) (a>b?a:b)
 #define MIN(a,b) (a<b?a:b)
 #define LERP(a,b,f) ((b - a)*f + a)
+
+//Fixed Point Arithmetic and constants
+#define PVAL 65536.0f
+#define PSCAL 16
+#define MULFP(a,b) ( (( (a) ) * ( (b) )) >>PSCAL )
+#define DIVFP(a,b) ( (( (a) <<PSCAL) / ( (b) )) )
+
 struct VEC4 {
 	F32vec4 arr;
 	VEC4() {
