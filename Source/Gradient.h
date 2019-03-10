@@ -3,13 +3,13 @@
 class Gradient
 {
 public:
-	inline uint32_t getOneOverWXStep() const { return oneOverWXStep; }
-	inline uint32_t getOneOverWYStep() const { return oneOverWYStep; }
+	inline int32_t getOneOverWXStep() const { return WXStep; }
+	inline int32_t getOneOverWYStep() const { return WYStep; }
 		   
-	inline uint32_t getTexCoordsUXStep() const { return texCoordsUXStep; }
-	inline uint32_t getTexCoordsUYStep() const { return texCoordsUYStep; }
-	inline uint32_t getTexCoordsVXStep() const { return  texCoordsVXStep;}
-	inline uint32_t getTexCoordsVYStep() const { return  texCoordsVYStep; }
+	inline int32_t getTexCoordsUXStep() const { return UXStep; }
+	inline int32_t getTexCoordsUYStep() const { return UYStep; }
+	inline int32_t getTexCoordsVXStep() const { return  VXStep;}
+	inline int32_t getTexCoordsVYStep() const { return  VYStep; }
 
 	inline float getOneOverW(const int8_t& index) const { return oneOverW[index]; }
 	inline float getTexCoordsU(const int8_t& index) const { return oneOverW[index]; }
@@ -22,12 +22,12 @@ private:
 	float texCoordsU[3];
 	float texCoordsV[3];
 
-	uint32_t texCoordsUXStep;
-	uint32_t texCoordsUYStep;
-	uint32_t texCoordsVXStep;
-	uint32_t texCoordsVYStep;
-	uint32_t oneOverWXStep;
-	uint32_t oneOverWYStep;
+	int32_t UXStep;
+	int32_t UYStep;
+	int32_t VXStep;
+	int32_t VYStep;
+	int32_t WXStep;
+	int32_t WYStep;
 
 };
 

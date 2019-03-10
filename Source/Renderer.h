@@ -24,7 +24,6 @@ public:
 	void clearScreen() const;
 	void drawTriangle(const Vertex& v1,const Vertex& v2,const Vertex& v3) const;
 	void updateScreen() const;
-	//void drawPixel(const uint32_t& x, const uint32_t& y, const uint8_t& r, const uint8_t& g, const uint8_t& b, const uint8_t& a)const;
 private:
 	SDL_Window* window = nullptr;
 	SDL_Surface* surface = nullptr;
@@ -36,13 +35,13 @@ private:
 	static Renderer rendererInstance;
     Texture myTex=Texture(std::string("brickwall.jpg"));
 	//utility
-	int32_t UV_Wrap = (1 << PSCAL) - 1;
+	int32_t UV_Wrap = (1 << FP_SCL) - 1;
 
 
-	void scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert, bool direction) const;
+	void scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert,const bool& direction) const;
 	void drawEdgeToEdge(const Gradient& grad, Edge & left_shortEdge, Edge & right_tallEdge) const;
 	void drawEdgeToEdgeInversed(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge) const;
-	void drawLineEdgeToEdge(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge,int32_t& y, texData& td,uint32_t* currentPixRw) const;
+	void drawLineEdgeToEdge(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge,const int32_t& y,const texData& td,uint32_t* currentPixRw) const;
 	bool checkDirection(const Vertex& v1, const Vertex& v2, const Vertex& v3) const;
 
 };

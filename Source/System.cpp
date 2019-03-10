@@ -128,10 +128,11 @@ void System::render()
 	LortRenderer->clearScreen();
 
 	static float counter = 0;
-	counter += dTime;
+	counter += dTime/3;
 	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.0f,2.5f);
-	model = model* MAT4::getRotation(0.0f,counter,0.0f);
+	MAT4 model= MAT4::getTranslation(0.0f, 0.2f,2.25f);
+	//counter-1.55f
+	model = model* MAT4::getRotation(0.0f,counter-1.45f,0.0f);
 	//TODO VIEW MATRIX
 	MAT4 MVP = projection * model;
 

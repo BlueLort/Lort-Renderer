@@ -54,7 +54,7 @@ void Renderer::drawTriangle(const Vertex&  v1, const Vertex&  v2, const Vertex& 
 	bool dir = checkDirection(V1, V2, V3);
 	scanTriangle(V1, V2, V3, dir);
 }
-void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert, bool direction) const
+void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert,const bool& direction) const
 {
 	Gradient grad=Gradient(minYVert, midYVert, maxYVert);
 
@@ -65,10 +65,12 @@ void Renderer::scanTriangle(const Vertex & minYVert, const Vertex & midYVert, co
 	
 	
 	if (!direction) {
+							//left		right
 		drawEdgeToEdge(grad,topToBot, topToMid);
 		drawEdgeToEdge(grad,topToBot, midToBot);
 	}
 	else {
+									//right	 left
 		drawEdgeToEdgeInversed(grad,topToBot, topToMid);
 		drawEdgeToEdgeInversed(grad,topToBot, midToBot);
 	}
@@ -89,40 +91,44 @@ void Renderer::drawEdgeToEdge(const Gradient& grad, Edge & left_tallEdge, Edge &
 	}
 
 }
-void Renderer::drawEdgeToEdgeInversed(const Gradient& grad, Edge & left_tallEdge, Edge & right_shortEdge) const
+void Renderer::drawEdgeToEdgeInversed(const Gradient& grad, Edge & left_shortEdge, Edge & right_tallEdge) const
 {
-	uint32_t yStart = right_shortEdge.getYStart();
-	uint32_t yEnd = right_shortEdge.getYEnd();
-	uint32_t* currentPixRow = reinterpret_cast<uint32_t*>(surface->pixels) + right_shortEdge.getYStart() * scrWidth;
+	uint32_t yStart = right_tallEdge.getYStart();
+	uint32_t yEnd = right_tallEdge.getYEnd();
+	uint32_t* currentPixRow = reinterpret_cast<uint32_t*>(surface->pixels) + right_tallEdge.getYStart() * scrWidth;
 	texData TD = myTex.getTexData();
-
+	
 	for (int32_t y = yStart; y < yEnd; y++)
 	{
-		drawLineEdgeToEdge(grad,right_shortEdge,left_tallEdge, y,TD,currentPixRow);
-		left_tallEdge.Step();
-		right_shortEdge.Step();
+		drawLineEdgeToEdge(grad, right_tallEdge, left_shortEdge, y,TD,currentPixRow);
+		left_shortEdge.Step();
+		right_tallEdge.Step();
 		currentPixRow = currentPixRow + scrWidth;
 	}
 
 }
-void Renderer::drawLineEdgeToEdge(const Gradient& grad, Edge & left, Edge & right,int32_t& y,texData& td, uint32_t* currentPixRow) const
+void Renderer::drawLineEdgeToEdge(const Gradient& grad, Edge & left, Edge & right,const int32_t& y,const texData& td, uint32_t* currentPixRow) const
 {
 	uint32_t xMin = left.getCurrentX();
 	uint32_t xMax = right.getCurrentX();
 
-	uint32_t texCoordsUXStep = grad.getTexCoordsUXStep();
-	uint32_t texCoordsVXStep = grad.getTexCoordsVXStep();
-	uint32_t oneOverWXStep = grad.getOneOverWXStep();
+	int32_t texCoordsUXStep = grad.getTexCoordsUXStep();
+	int32_t texCoordsVXStep = grad.getTexCoordsVXStep();
+	int32_t oneOverWXStep = grad.getOneOverWXStep();
 	uint32_t texCoordsU = left.getTexCoordsU();
 	uint32_t texCoordsV = left.getTexCoordsV();
 	uint32_t oneOverW = left.getOneOverW();
+	
+	/*ASSUMING FP_SCL ALWAYS GREATER THAN TEXTURE SHIFTS*/
+	
+	uint8_t wShift = FP_SCL - td.widthShift;
+	uint8_t hShift = FP_SCL - td.widthShift;
+	for (int32_t x = xMin; x < xMax; x += FP_IVAL) {
+		//MULTIPLICATION INSTEAD OF DIV? ERROR-TO-Be-FIXED
+		int32_t texX = (((DIVFP(texCoordsU, oneOverW)) & UV_Wrap) >> wShift);
+		int32_t texY = (((DIVFP(texCoordsV, oneOverW)) & UV_Wrap) >> hShift);
 
-	for (int32_t x = xMin; x < xMax; x += 1 << PSCAL) {
-
-		uint32_t texX = (((DIVFP(texCoordsU,oneOverW)) & UV_Wrap) << td.widthShift) >> PSCAL;
-		uint32_t texY = (((DIVFP(texCoordsV,oneOverW)) & UV_Wrap) << td.heightShift) >> PSCAL;
-
-		currentPixRow[x >> PSCAL] = td.texColors[texY * td.width + texX];
+		currentPixRow[x >> FP_SCL] = td.texColors[texY * td.width + texX];
 		//currentPixRow[x >> PSCAL] = 0xffffffff;
 		texCoordsU = texCoordsU + texCoordsUXStep;
 		texCoordsV = texCoordsV + texCoordsVXStep;

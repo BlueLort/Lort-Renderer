@@ -7,10 +7,11 @@
 #define LERP(a,b,f) ((b - a)*f + a)
 
 //Fixed Point Arithmetic and constants
-#define PVAL 65536.0f
-#define PSCAL 16
-#define MULFP(a,b) ( (( (a) ) * ( (b) )) >>PSCAL )
-#define DIVFP(a,b) ( (( (a) <<PSCAL) / ( (b) )) )
+#define FP_FVAL 65536.0f //fixed point float value
+#define FP_IVAL 65536 //fixed point integer value
+#define FP_SCL 16 //fixed point precision scale value
+#define MULFP(a,b) ( (( (a) ) * ( (b) )) >>FP_SCL )
+#define DIVFP(a,b) ( (( (a) <<FP_SCL) / ( (b) )) )
 
 struct VEC4 {
 	F32vec4 arr;

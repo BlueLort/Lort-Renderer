@@ -23,9 +23,9 @@
 Gradient::Gradient(const Vertex & minYVert, const Vertex & midYVert, const Vertex & maxYVert)
 {
 
-	oneOverW[0] = 1.0f/minYVert.pos.arr[3];
-	oneOverW[1] = 1.0f /midYVert.pos.arr[3];
-	oneOverW[2] = 1.0f /maxYVert.pos.arr[3];
+	oneOverW[0] = 1.0f / minYVert.pos.arr[3];
+	oneOverW[1] = 1.0f / midYVert.pos.arr[3];
+	oneOverW[2] = 1.0f / maxYVert.pos.arr[3];
 	texCoordsU[0] = minYVert.texCoords.arr[0] * oneOverW[0];
 	texCoordsU[1] = midYVert.texCoords.arr[0] * oneOverW[1];
 	texCoordsU[2] = maxYVert.texCoords.arr[0] * oneOverW[2];
@@ -33,28 +33,30 @@ Gradient::Gradient(const Vertex & minYVert, const Vertex & midYVert, const Verte
 	texCoordsV[1] = midYVert.texCoords.arr[1] * oneOverW[1];
 	texCoordsV[2] = maxYVert.texCoords.arr[1] * oneOverW[2];
 
-	float x0 = minYVert.pos.arr[0];	float y0 = minYVert.pos.arr[1];
-	float x1 = midYVert.pos.arr[0];	float y1 = midYVert.pos.arr[1];
-	float x2 = maxYVert.pos.arr[0];	float y2 = maxYVert.pos.arr[1];
-
+	int32_t x0 = static_cast<int32_t>(minYVert.pos.arr[0] + 0.99f);	
+	int32_t x1 = static_cast<int32_t>(midYVert.pos.arr[0] + 0.99f);	
+	int32_t x2 = static_cast<int32_t>(maxYVert.pos.arr[0] + 0.99f);	
+	int32_t y0 = static_cast<int32_t>(minYVert.pos.arr[1] + 0.99f);
+	int32_t y1 = static_cast<int32_t>(midYVert.pos.arr[1] + 0.99f);
+	int32_t y2 = static_cast<int32_t>(maxYVert.pos.arr[1] + 0.99f);
 
 	float oneOver_dx = 1.0f /(((x1 - x2)*(y0 -y2))-((x0 - x2)*(y1 - y2)));
 	float oneOver_dy = - oneOver_dx;
 
-	float dTexCoordsUDX = (((texCoordsU[1] - texCoordsU[2])*(y0 - y2)) - ((texCoordsU[0] - texCoordsU[2])*(y1 - y2)));
-	float dTexCoordsUDY = (((texCoordsU[1] - texCoordsU[2])*(x0 - x2)) - ((texCoordsU[0] - texCoordsU[2])*(x1 - x2)));
-	float dTexCoordsVDX = (((texCoordsV[1] - texCoordsV[2])*(y0 - y2)) - ((texCoordsV[0] - texCoordsV[2])*(y1 - y2)));
-	float dTexCoordsVDY = (((texCoordsV[1] - texCoordsV[2])*(x0 - x2)) - ((texCoordsV[0] - texCoordsV[2])*(x1 - x2)));
-	float dOneOverWDX = (((oneOverW[1] - oneOverW[2])*(y0 - y2)) - ((oneOverW[0] - oneOverW[2])*(y1 - y2)));
-	float dOneOverWDY = (((oneOverW[1] - oneOverW[2])*(x0 - x2)) - ((oneOverW[0] - oneOverW[2])*(x1 - x2)));
+	float DUDX = (((texCoordsU[1] - texCoordsU[2])*(y0 - y2)) - ((texCoordsU[0] - texCoordsU[2])*(y1 - y2)));
+	float DUDY = (((texCoordsU[1] - texCoordsU[2])*(x0 - x2)) - ((texCoordsU[0] - texCoordsU[2])*(x1 - x2)));
+	float DVDX = (((texCoordsV[1] - texCoordsV[2])*(y0 - y2)) - ((texCoordsV[0] - texCoordsV[2])*(y1 - y2)));
+	float DVDY = (((texCoordsV[1] - texCoordsV[2])*(x0 - x2)) - ((texCoordsV[0] - texCoordsV[2])*(x1 - x2)));
+	float DWDX = (((oneOverW[1] - oneOverW[2])*(y0 - y2)) - ((oneOverW[0] - oneOverW[2])*(y1 - y2)));
+	float DWDY = (((oneOverW[1] - oneOverW[2])*(x0 - x2)) - ((oneOverW[0] - oneOverW[2])*(x1 - x2)));
 
 
-	this->texCoordsUXStep = static_cast<uint32_t>(dTexCoordsUDX * oneOver_dx*PVAL);
-	this->texCoordsUYStep = static_cast<uint32_t>(dTexCoordsUDY * oneOver_dy*PVAL);
-	this->texCoordsVXStep = static_cast<uint32_t>(dTexCoordsVDX * oneOver_dx*PVAL);
-	this->texCoordsVYStep = static_cast<uint32_t>(dTexCoordsVDY * oneOver_dy*PVAL);
-	this->oneOverWXStep = static_cast<uint32_t>(dOneOverWDX * oneOver_dx*PVAL);
-	this->oneOverWYStep = static_cast<uint32_t>(dOneOverWDY * oneOver_dy*PVAL);
+	this->UXStep = static_cast<uint32_t>(DUDX * oneOver_dx * FP_FVAL);
+	this->UYStep = static_cast<uint32_t>(DUDY * oneOver_dy * FP_FVAL);
+	this->VXStep = static_cast<uint32_t>(DVDX * oneOver_dx * FP_FVAL);
+	this->VYStep = static_cast<uint32_t>(DVDY * oneOver_dy * FP_FVAL);
+	this->WXStep = static_cast<uint32_t>(DWDX * oneOver_dx * FP_FVAL);
+	this->WYStep = static_cast<uint32_t>(DWDY * oneOver_dy * FP_FVAL);
 
 
 }

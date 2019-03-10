@@ -11,28 +11,26 @@ Edge::Edge(const Gradient& grad, const Vertex&  minYVert, const Vertex& maxYVert
 	uint32_t xStart = static_cast<uint32_t>(minYVert.pos.arr[0] + 0.99f);
 	uint32_t xEnd = static_cast<uint32_t>(maxYVert.pos.arr[0] + 0.99f);
 
-	uint32_t yDist = yEnd - yStart;
-	uint32_t xDist = xEnd - xStart;
-	
-	uint32_t v0 = static_cast<uint32_t>(minYVert.texCoords.arr[1] * PVAL);    
-	uint32_t v1 = static_cast<uint32_t>(maxYVert.texCoords.arr[1] * PVAL);    
-
+	int32_t yDist = yEnd - yStart;
+	int32_t xDist = xEnd - xStart;
 
 	this->xScale = 0;
-	if (xDist != 0)xScale = (1 << PSCAL) / (xDist);
-
+	if (xDist != 0)xScale = (FP_IVAL) / (xDist);
+	
 	this->yScale = 0;
-	if (yDist != 0)yScale = (1 << PSCAL) / (yDist);
-
-	this->currentX = (xStart << PSCAL);
+	if (yDist != 0)yScale = (FP_IVAL) / (yDist);
+	
 	this->xStep = xDist * yScale;
+	this->currentX = (xStart << FP_SCL);
+	
 
 
-	this->texCoordsU = static_cast<uint32_t>(grad.getTexCoordsU(minYVertIndex)*PVAL);
+
+	this->texCoordsU = static_cast<int32_t>(grad.getTexCoordsU(minYVertIndex)*FP_FVAL);
 	this->texCoordsUStep = grad.getTexCoordsUYStep() + MULFP(grad.getTexCoordsUXStep(), xStep);
-	this->texCoordsV = static_cast<uint32_t>(grad.getTexCoordsV(minYVertIndex)*PVAL);
+	this->texCoordsV = static_cast<int32_t>(grad.getTexCoordsV(minYVertIndex)*FP_FVAL);
 	this->texCoordsVStep = grad.getTexCoordsVYStep() + MULFP(grad.getTexCoordsVXStep(), xStep);
-	this->oneOverW= static_cast<uint32_t>(grad.getOneOverW(minYVertIndex)*PVAL);
+	this->oneOverW = static_cast<int32_t>(grad.getOneOverW(minYVertIndex)*FP_FVAL);
 	this->oneOverWStep = grad.getOneOverWYStep() + MULFP(grad.getOneOverWXStep(), xStep);
 
 }
@@ -40,10 +38,10 @@ Edge::Edge(const Gradient& grad, const Vertex&  minYVert, const Vertex& maxYVert
 
 void Edge::Step()
 {
-	currentX = currentX + xStep;
-	texCoordsU = texCoordsU + texCoordsUStep;
-	texCoordsV = texCoordsV + texCoordsVStep;
-	oneOverW = oneOverW + oneOverWStep;
+	currentX += xStep;
+	texCoordsU += texCoordsUStep;
+	texCoordsV += texCoordsVStep;
+	oneOverW += oneOverWStep;
 
 }
 
