@@ -13,15 +13,15 @@ public:
 	void addReleaseKey(const uint32_t& SDL_KEY);
 
 	void setMousePosition(const uint32_t& x, const uint32_t& y);
-	VEC2 getMouseOffset();
-	VEC2 getMousePosition();
-	 bool isKeyPressed(const uint32_t& SDL_KEY);
-	 bool isKeyHeld(const uint32_t& SDL_KEY);
-	 bool isKeyReleased(const uint32_t& SDL_KEY);
+	Vec4f getMouseOffset();
+	Vec4f getMousePosition();
+	bool isKeyPressed(const uint32_t& SDL_KEY);
+	bool isKeyHeld(const uint32_t& SDL_KEY);
+	bool isKeyReleased(const uint32_t& SDL_KEY);
 	
 private:
-	VEC2 mousePos=VEC2(0.0f,0.0f);
-	VEC2 lastMousePos = VEC2(0.0f, 0.0f);
+	Vec4f mousePos;
+	Vec4f lastMousePos;
 	static InputKeeper InputKeeperInstance;
 
 	std::unordered_map<uint32_t, bool> currentKeys;

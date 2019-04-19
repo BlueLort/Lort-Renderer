@@ -2,13 +2,15 @@
 #include <SDL\SDL.h>
 #include <iostream>
 #include <string>
+#include <memory>
 #include "InputKeeper.h"
 #include "Renderer.h"
 #include "Structures.h"
+#include "Camera.h"
 #include "Mesh.h"
-#include <random>
-const uint16_t    SCR_WIDTH = 1024;
-const uint16_t    SCR_HEIGHT = 768;
+#include "Plane.h"
+const uint32_t    SCR_WIDTH = 1024;
+const uint32_t    SCR_HEIGHT = 768;
 const std::string SCR_TITLE = "Lort Software Renderer";
 #define err(message)  printf(message);system("pause");
 #define fatalErr(message)  printf(message);system("pause");exit(-1);
@@ -16,36 +18,31 @@ const std::string SCR_TITLE = "Lort Software Renderer";
 class System
 {
 public:
-
 	System();
 	~System();
-	void destroy();//destroy any reserved memory by the system
-	static System* getInstance();//get the instance of the system
+	static std::shared_ptr<System> getInstance();//get the instance of the system
 	void Run();
 private:
 	//Functions
 	void initSDL();
-	float getDeltaTime();
+	float getDeltaTime()const;
 	void pollInputs();
-	void processInputs();
+	void processInputs(const float deltaTime);
 	void render();
-	void update();
+	void update()const;
 
 	//Members
 	bool           running ;
 	float		   dTime;
-	MAT4		   projection;
-	static System* systemInstance;//singleton 
+	Mat4x4f		   projection;
 	SDL_Window*    window=nullptr;//points to screenwindow
 	SDL_Surface*   surface = nullptr;//points to screen surface
 	InputKeeper*   inputKeeper = nullptr;//input keeper class that keeps press,held,released keys
-	Renderer*      LortRenderer;
+	Renderer*     LortRenderer;
 
-	//TEST VERTICES
-	Vertex v1 = Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,0.0f,1.0f,0.0f, static_cast<uint32_t>(0x00ff00ff));
-	Vertex v2 = Vertex(0.0f, 1.0f, 0.0f, 0.5f, 1.0f, 0.0f, 1.0f, 0.0f ,static_cast<uint32_t>(0xff0000ff));
-	Vertex v3 = Vertex(1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<uint32_t>(0x0000ffff));
-	Mesh sphere = Mesh(std::string("Sphere.obj"),true,true);
+
+	std::unique_ptr<Mesh> model = std::make_unique<Mesh>(std::string("res/MonkeyH.obj"));
+	std::unique_ptr<Plane> plane = std::make_unique<Plane>(std::string("res/hMap.png"));
 
 };
 

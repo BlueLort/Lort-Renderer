@@ -3,46 +3,33 @@
 
 
 
-Edge::Edge(const Gradient& grad, const Vertex&  minYVert, const Vertex& maxYVert, const int8_t& minYVertIndex)
+Edge::Edge(const Interpolant& inter, const Vertex&  minYVert, const Vertex& maxYVert, const int8_t& minYVertIndex)
 {
-	this->yStart = static_cast<uint32_t>(minYVert.pos.arr[1]+0.99f);
-	this->yEnd = static_cast<uint32_t>(maxYVert.pos.arr[1]+0.99f);
+	this->yStart = static_cast<int32_t>(minYVert.pos[1]+0.99f);
+	this->yEnd = static_cast<int32_t>(maxYVert.pos[1]+0.99f);
 
-	uint32_t xStart = static_cast<uint32_t>(minYVert.pos.arr[0] + 0.99f);
-	uint32_t xEnd = static_cast<uint32_t>(maxYVert.pos.arr[0] + 0.99f);
+	float yDist = maxYVert.pos[1] - minYVert.pos[1];
+	float xDist = maxYVert.pos[0] - minYVert.pos[0];
 
-	int32_t yDist = yEnd - yStart;
-	int32_t xDist = xEnd - xStart;
+	float yPreStep = yStart - minYVert.pos[1];
+	this->xStep = xDist / yDist;
+	this->currentX = minYVert.pos[0] + yPreStep * xStep;
 
-	this->xScale = 0;
-	if (xDist != 0)xScale = (FP_IVAL) / (xDist);
-	
-	this->yScale = 0;
-	if (yDist != 0)yScale = (FP_IVAL) / (yDist);
-	
-	this->xStep = xDist * yScale;
-	this->currentX = (xStart << FP_SCL);
-	
+	float xPreStep = currentX - minYVert.pos[0];
 
+	this->elements = inter.getElements(minYVertIndex) + inter.getElementsYStep()*yPreStep + inter.getElementsXStep()*xPreStep;
+	this->elementsStep = inter.getElementsYStep() + inter.getElementsXStep()*xStep;
 
-
-	this->texCoordsU = static_cast<int32_t>(grad.getTexCoordsU(minYVertIndex)*FP_FVAL);
-	this->texCoordsUStep = grad.getTexCoordsUYStep() + MULFP(grad.getTexCoordsUXStep(), xStep);
-	this->texCoordsV = static_cast<int32_t>(grad.getTexCoordsV(minYVertIndex)*FP_FVAL);
-	this->texCoordsVStep = grad.getTexCoordsVYStep() + MULFP(grad.getTexCoordsVXStep(), xStep);
-	this->oneOverW = static_cast<int32_t>(grad.getOneOverW(minYVertIndex)*FP_FVAL);
-	this->oneOverWStep = grad.getOneOverWYStep() + MULFP(grad.getOneOverWXStep(), xStep);
-
+	this->light = inter.getLight(minYVertIndex) + inter.getLightYStep()*yPreStep + inter.getLightXStep()*xPreStep;
+	this->lightStep = inter.getLightYStep() + inter.getLightXStep()*xStep;
 }
 
 
-void Edge::Step()
+ void Edge::Step()
 {
-	currentX += xStep;
-	texCoordsU += texCoordsUStep;
-	texCoordsV += texCoordsVStep;
-	oneOverW += oneOverWStep;
-
+	 this->currentX += xStep;
+	 this->elements += elementsStep;
+	 this->light += lightStep;
 }
 
 Edge::~Edge()

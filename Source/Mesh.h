@@ -4,13 +4,18 @@
 class Mesh
 {
 public:
-	Mesh(const std::string& filePath,const bool& normalIncluded,const bool& texIncluded);
-	void render(const Renderer& renderer) const;
-	inline MAT4 getMVP() const { return MVP; }
-	void setMVP(const MAT4& MVP) { this->MVP = MVP; }
+	Mesh(const std::string& filePath);
+	Mesh(const Mesh& copy) = delete;
+	void render(const Renderer* renderer) const;
+	inline Mat4x4f getMVP() const { return VP; }
+	inline Mat4x4f getModel() const { return Model; }
+	inline void setVP(const Mat4x4f& VP) { this->VP = VP; }
+	inline void setModel(const Mat4x4f& M) { this->Model = M; }
 	~Mesh();
 private:
-	MAT4 MVP;
+	Mat4x4f VP;
+	Mat4x4f Model;
 	std::vector<Vertex> vertices;
+	std::vector<int32_t> indices;
 };
 

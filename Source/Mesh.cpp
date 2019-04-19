@@ -1,22 +1,19 @@
 #include "Mesh.h"
 
-
-
-Mesh::Mesh(const std::string& filePath,const bool& texIncluded , const bool& normalIncluded)
+Mesh::Mesh(const std::string& filePath)
 {
-	bool texNorm[2];
-	texNorm[0] = texIncluded;
-	texNorm[1] = normalIncluded;
-	FilesManager::getFilesManagerInstance()->readOBJModel(filePath, vertices, texNorm);
+	FilesManager::getFilesManagerInstance()->readOBJModel(filePath, vertices, indices);
 }
 
-void Mesh::render(const Renderer& renderer) const
+void Mesh::render(const Renderer* renderer) const
 {
-	for (int32_t i = 0; i < vertices.size(); i= i + 3) {
-		renderer.drawTriangle(
-			  vertices[i].Transform(MVP)
-			, vertices[i + 1].Transform(MVP)
-			, vertices[i + 2].Transform(MVP)
+	int32_t len = indices.size();
+	Mat4x4f MVP = VP * Model;
+	for (int32_t i = 0; i < len; i= i + 3) {
+		renderer->clipRenderTriangle(
+			  vertices[indices[i]].Transform(MVP,Model)
+			, vertices[indices[i + 1]].Transform(MVP,Model)
+			, vertices[indices[i + 2]].Transform(MVP,Model)
 		);
 	}
 }
@@ -25,4 +22,5 @@ void Mesh::render(const Renderer& renderer) const
 Mesh::~Mesh()
 {
 	vertices.clear();
+	indices.clear();
 }

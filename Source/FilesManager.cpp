@@ -25,8 +25,8 @@ uint32_t* FilesManager::readImage(const std::string & filePath, int & width, int
 		unsigned bytePerPixel = nrChannels;
 		uint8_t* pixelOffset;
 		uint8_t r, g, b, a;
-		for (uint16_t y = 0; y < height; y++) {
-			for (uint16_t x = 0; x <width; x++) {
+		for (int32_t y = 0; y < height; y++) {
+			for (int32_t x = 0; x <width; x++) {
 				pixelOffset = data + (width*y + x) * bytePerPixel;
 				r = pixelOffset[0];
 				g = pixelOffset[1];
@@ -39,20 +39,64 @@ uint32_t* FilesManager::readImage(const std::string & filePath, int & width, int
 		}
 	}
 	else {
-		std::cout << "COULDN'T READ Image" << std::endl;
+		std::cout << "COULDN'T READ IMAGE \n File Path:"+filePath << std::endl;
 	}
 	return imageArray;
 }
 
-void FilesManager::readOBJModel(const std::string & filePath, std::vector<Vertex>& vertices,const bool Tex_Norm_Included[2]) const
+void FilesManager::readOBJModel(const std::string & filePath, std::vector<Vertex>& vertices,std::vector<int32_t>& indices) const
 {
+
+	std::vector<Vec4f> Positions;
+	std::vector<Vec4f> TexCoords;
+	std::vector<Vec4f> Normals;
+	std::vector<int32_t> Indices;
+	std::unordered_map<int32_t, int32_t> IndexerMap;
 	std::ifstream OBJFile(filePath);
-	std::string fileData= "",line;
+	std::string line;
+	Vec4f TexCoords_default;//if tex coords not included
+	Vec4f Normal_default = Vec4f(0.0f, 1.0f, 0.0f,0.0f);//if normal not included
+	TexCoords.push_back(TexCoords_default);
+	Normals.push_back(Normal_default);
+
 	if (OBJFile.is_open())
 	{
 		while (getline(OBJFile, line))
 		{
-			fileData+= line;
+
+			std::vector<std::string> tokens = split(line,' ');
+			if (tokens.size() <= 1 || tokens[0][0] == '#')continue;
+			if (tokens[0] == "v") {
+				Positions.push_back(Vec4f(stof(tokens[1]), stof(tokens[2]), stof(tokens[3]), 1.0f));
+			}
+			else if (tokens[0] == "vt") {
+				TexCoords.push_back(Vec4f(stof(tokens[1]), stof(tokens[2]),0.0f,0.0f));
+			}
+			else if (tokens[0] == "vn") {
+				Normals.push_back(Vec4f(stof(tokens[1]), stof(tokens[2]), stof(tokens[3]),0.0f).normalized());
+			}
+			else if (tokens[0] == "f") {
+				static int32_t indexCounter = 0;
+				int32_t nVerts = tokens.size()-3;//to determine it's a 4verts face or 3 verts face
+				for (int32_t i = 0; i < nVerts; i++) {
+					OBJModelIndexer obi = getOBJModelIndexerFromIndicesString(tokens[1]);
+						int32_t hash = getHash(obi);
+						if (IndexerMap.find(hash) == IndexerMap.end()) {
+							vertices.emplace_back(Vertex(Positions[obi.posIndex], TexCoords[obi.texIndex], Normals[obi.normIndex]));
+							IndexerMap.emplace(std::pair<int32_t, int32_t>(hash, indexCounter++));
+						}
+						Indices.push_back(hash);
+					for (int32_t j = 2; j <= 3; j++) {
+						obi = getOBJModelIndexerFromIndicesString(tokens[j+i]);
+						hash = getHash(obi);
+						if (IndexerMap.find(hash) == IndexerMap.end()) {
+							vertices.emplace_back(Vertex(Positions[obi.posIndex], TexCoords[obi.texIndex], Normals[obi.normIndex]));
+							IndexerMap.emplace(std::pair<int32_t, int32_t>(hash, indexCounter++));
+						}
+						Indices.push_back(hash);
+					}
+				}
+			}
 		}
 		OBJFile.close();
 	}
@@ -60,99 +104,49 @@ void FilesManager::readOBJModel(const std::string & filePath, std::vector<Vertex
 		std::cout << " COULDN'T READ THE OBJ FILE !! \nFile Path:" + filePath << std::endl;
 		return;
 	}
-	std::vector<VEC4> Positions;
-	std::vector<VEC2> TexCoords;
-	std::vector<VEC3> Normals;
-
-
-	//Get Vertices Positions
-	std::regex reg = std::regex("v +([-\.1234567890]+) +([-\.1234567890]+) +([-\.1234567890]+)");
-	readPositionsOBJ(fileData,Positions,reg);
-
-	//RE-ADJUST VECTORS MEMORY RESERVATION ACCORDING TO VERTICES COUNT
-	if (Tex_Norm_Included[0])TexCoords.reserve(Positions.size());
-	if (Tex_Norm_Included[1])Normals.reserve(Positions.size());
-
-	VEC2 TexCoords_default = VEC2(0.0f, 0.0f);//if tex coords not included
-	VEC3 Normal_default = VEC3(0.0f, 1.0f, 0.0f);//if normal not included
-	TexCoords.push_back(TexCoords_default);
-	Normals.push_back(Normal_default);
-
-	//Get Vertices TexCoords
-	if (Tex_Norm_Included[0]) {
-		reg = std::regex("vt +([-\.1234567890]+) +([-\.1234567890]+)");
-		readTexCoordsOBJ(fileData, TexCoords, reg);
+	int32_t len = Indices.size();
+	for (int32_t i = 0; i < len; i++) {
+		indices.push_back(IndexerMap.find(Indices[i])->second);
 	}
-
-	//Get Vertices Normals
-	if (Tex_Norm_Included[1]) {
-		reg = std::regex("vn +([-\.1234567890]+) +([-\.1234567890]+) +([-\.1234567890]+)");
-		readNormalsOBJ(fileData, Normals, reg);
-	}
-
-	//Construct the vertices data (ignoring the indices mapping from this project)
-	std::string d = "[0-9]";//match digit as '\d' does not work on some compilers
-	reg = std::regex("f +("+d+"+)\/*("+d+"*)\/*("+d+"*)\/* +("+d+"+)\/*("+d+"*)\/*("+d+"*)\/* +("+d+"+)\/*("+d+"*)\/*("+d+"*)\/*");
-	std::smatch match;
-	while (std::regex_search(fileData, match, reg)) {
-		uint32_t vp1 = static_cast<uint32_t>(stoul(match.str(1)));
-		uint32_t vp2 = static_cast<uint32_t>(stoul(match.str(4)));
-		uint32_t vp3 = static_cast<uint32_t>(stoul(match.str(7)));
-			
-		uint32_t vtx1 = (!Tex_Norm_Included[0] ? 0 :  static_cast<uint32_t>(stoul(match.str(2))));
-		uint32_t vtx2 = (!Tex_Norm_Included[0] ? 0 :  static_cast<uint32_t>(stoul(match.str(5))));
-		uint32_t vtx3 = (!Tex_Norm_Included[0] ? 0 :  static_cast<uint32_t>(stoul(match.str(8))));
-				 
-		uint32_t vn1 = (!Tex_Norm_Included[1] ? 0 : static_cast<uint32_t>(stoul(match.str(3))));
-		uint32_t vn2 = (!Tex_Norm_Included[1] ? 0 : static_cast<uint32_t>(stoul(match.str(6))));
-		uint32_t vn3 = (!Tex_Norm_Included[1] ? 0 : static_cast<uint32_t>(stoul(match.str(9))));
-		//positions vector is always filled however texcoords and normals are not.
-		//So i have added a default data at index 0 in both texcoords and normals vectors.
-		//so because of that
-		//now indices of vertex positions should be -1 (counting from 1) and texcoords and normals are not.
-		vertices.push_back(Vertex(Positions[vp1-1], TexCoords[vtx1], Normals[vn1]));
-		vertices.push_back(Vertex(Positions[vp2-1], TexCoords[vtx2], Normals[vn2]));
-		vertices.push_back(Vertex(Positions[vp3-1], TexCoords[vtx3], Normals[vn3]));
-		fileData = match.suffix().str();
-	}
-
 }
 
-void FilesManager::readPositionsOBJ(std::string fileData, std::vector<VEC4>& VerticesPositions, const std::regex & reg) const
+OBJModelIndexer FilesManager::getOBJModelIndexerFromIndicesString(const std::string & s)const
 {
-	std::smatch match;
-	while (std::regex_search(fileData, match, reg)) {
-		VEC4 pos;
-		pos.arr[0] = stof(match.str(1));
-		pos.arr[1] = stof(match.str(2));
-		pos.arr[2] = stof(match.str(3));
-		pos.arr[3] = 1.0f;
-		VerticesPositions.push_back(pos);
-		fileData = match.suffix().str();
+	std::vector<std::string> faceComponents = split(s, '/');
+	OBJModelIndexer obi;
+	if (faceComponents.size() > 1) {
+		obi.posIndex = stoul(faceComponents[0]) - 1;
+		obi.texIndex = 0;//default tex index
+		obi.normIndex = 0;//default norm index
+		if (!faceComponents[1].empty()) {
+			obi.texIndex = stoul(faceComponents[1]);
+		}
+		if (faceComponents.size() > 2) {
+			obi.normIndex = stoul(faceComponents[2]);
+		}
 	}
+	return obi;
 }
 
-void FilesManager::readTexCoordsOBJ(std::string fileData,std::vector<VEC2>& VerticesTexCoords, const std::regex & reg) const
+int32_t FilesManager::getHash(const OBJModelIndexer & obi) const
 {
-	std::smatch match;
-	while (std::regex_search(fileData, match, reg)) {
-		VEC2 texCoords;
-		texCoords.arr[0] = stof(match.str(1));
-		texCoords.arr[1] = stof(match.str(2));
-		VerticesTexCoords.push_back(texCoords);
-		fileData = match.suffix().str();
-	}
+	//2 prime numbers for good hashing
+	constexpr const int32_t MULTIPLIER =337;
+	constexpr const int32_t BASE = 241;
+	int32_t hash = BASE;
+	hash = ((MULTIPLIER * hash + obi.posIndex)*MULTIPLIER + obi.texIndex)*MULTIPLIER + obi.normIndex;
+	return hash;
 }
 
-void FilesManager::readNormalsOBJ(std::string fileData,std::vector<VEC3>& VerticesNormals, const std::regex & reg) const
+inline std::vector<std::string> FilesManager::split(const std::string & s, char delimiter) const
 {
-	std::smatch match;
-	while (std::regex_search(fileData, match, reg)) {
-		VEC3 norm;
-		norm.arr[0] = stof(match.str(1));
-		norm.arr[1] = stof(match.str(2));
-		norm.arr[2] = stof(match.str(3));
-		VerticesNormals.push_back(norm);
-		fileData = match.suffix().str();
+	std::vector<std::string> tokens;
+	std::string token;
+	std::istringstream tokenStream(s);
+	while (std::getline(tokenStream, token, delimiter))
+	{
+		tokens.push_back(token);
 	}
+	return tokens;
 }
+

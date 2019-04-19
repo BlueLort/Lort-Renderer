@@ -1,7 +1,5 @@
 #include "System.h"
 
-System* System::systemInstance = nullptr;
-
 System::System() : running(true)
 {
 	initSDL();
@@ -9,9 +7,10 @@ System::System() : running(true)
 	LortRenderer = Renderer::getInstance();
 	LortRenderer->setScreenWidth(SCR_WIDTH);
 	LortRenderer->setScreenHeight(SCR_HEIGHT);
+	LortRenderer->initZBuffer();
 	LortRenderer->setWindow(window);
 	LortRenderer->setSurface(surface);
-	LortRenderer->setClearColor(0xff000000);//ARGB FORMAT!!!
+	LortRenderer->setClearColor(0xff000000);
 	LortRenderer->updateHalfScrSize();
 
 }
@@ -19,25 +18,17 @@ System::System() : running(true)
 
 System::~System()
 {
-	destroy();
-	delete this->systemInstance;
-}
-
-void System::destroy()
-{
-
 	SDL_DestroyWindow(window);
 	SDL_Quit();
-
-
 }
 
-System * System::getInstance()
+std::shared_ptr<System> System::getInstance()
 {
-	if (systemInstance == nullptr) {
-		systemInstance = new System();
+	static std::shared_ptr<System> instance = nullptr;
+	if (!instance) {
+		instance = std::make_unique<System>();
 	}
-	return systemInstance;
+	return instance;
 }
 
 void System::initSDL()
@@ -59,27 +50,22 @@ void System::initSDL()
 void System::Run()
 {
 	uint32_t mod = 0;
-	projection = MAT4::getPerspective(
-		70.0f,
+	projection = Mat4x4f::getPerspective(
+		1.22173f,
 		static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT)
 		, 0.1f
-		, 1000.0f);
+		, 100.0f);
 
 	while (running) {
 		dTime = getDeltaTime();
-		mod++;
 		pollInputs();
-		processInputs();
-	//	if (mod == 128) {//print deltatime once each 128 frame
-			printf("FPS:%f\n", 1 / dTime);
-			mod = 0;
-		//}
+		processInputs(dTime);
+	   //printf("FPS:%f\n", 1 / dTime);
 		render();
 		update();
 	}
-	this->destroy();//destroy the program
 }
-float System::getDeltaTime()
+inline float System::getDeltaTime()const
 {
 	static uint32_t lastTime = 0;
 	uint32_t elapsed = SDL_GetTicks() - lastTime;
@@ -117,8 +103,39 @@ void System::pollInputs()
 	}
 }
 
-void System::processInputs()
+void System::processInputs(const float deltaTime)
 {
+	
+	if (inputKeeper->isKeyPressed(SDLK_ESCAPE)) {
+		running = false;
+	}
+	if (inputKeeper->isKeyHeld(SDLK_w)) {
+		Camera::getInstance().ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_s)) {
+		Camera::getInstance().ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_a)) {
+		Camera::getInstance().ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_d)) {
+		Camera::getInstance().ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
+	}
+
+
+
+	if (inputKeeper->isKeyHeld(SDLK_UP)) {
+		Camera::getInstance().ProcessMouseMovement(0.0f, 512.0f*deltaTime);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_DOWN)) {
+		Camera::getInstance().ProcessMouseMovement(0.0f, -512.0f*deltaTime);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_LEFT)) {
+		Camera::getInstance().ProcessMouseMovement(-512.0f*deltaTime, 0.0f);
+	}
+	if (inputKeeper->isKeyHeld(SDLK_RIGHT)) {
+		Camera::getInstance().ProcessMouseMovement(512.0f*deltaTime, 0.0f);
+	}
 
 }
 
@@ -128,23 +145,24 @@ void System::render()
 	LortRenderer->clearScreen();
 
 	static float counter = 0;
-	counter += dTime/3;
-	
-	MAT4 model= MAT4::getTranslation(0.0f, 0.2f,2.25f);
-	//counter-1.55f
-	model = model* MAT4::getRotation(0.0f,counter-1.45f,0.0f);
-	//TODO VIEW MATRIX
-	MAT4 MVP = projection * model;
+	counter += dTime;
+	Mat4x4f VP = projection * Camera::getInstance().getViewMatrix();
 
-	sphere.setMVP(MVP);
-	//sphere.render(*LortRenderer);
-	LortRenderer->drawTriangle(v1.Transform(MVP), v2.Transform(MVP), v3.Transform(MVP));
+	Mat4x4f modelMat = Mat4x4f::getTranslation(0.0f, 0.0f, -6.0f);
+	modelMat = modelMat * Mat4x4f::getRotation(0.0f, counter, 0.0f);
+	model->setVP(VP);
+	model->setModel(modelMat);
+	model->render(LortRenderer);
+	modelMat = Mat4x4f();
+	VP = projection * Camera::getInstance().getViewMatrix();
+	plane->setVP(VP);
+	plane->render(LortRenderer);
 	LortRenderer->updateScreen();
 }
 
 
 
-void System::update()
+void System::update()const
 {
 	inputKeeper->updateKeys();
 }
